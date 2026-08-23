@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Release Ledger — Track & Compare Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0F0B1F;
+    --bg-raised: #1B1533;
+    --bg-card: #221A42;
+    --line: rgba(245,243,238,0.09);
+    --line-strong: rgba(245,243,238,0.18);
+    --ink: #F5F3EE;
+    --ink-dim: rgba(245,243,238,0.80);
+    --ink-faint: rgba(245,243,238,0.56);
+    --amber: #FFB238;
+    --amber-dim: rgba(255,178,56,0.16);
+    --sky: #38BDF8;
+    --sky-dim: rgba(56,189,248,0.16);
+    --violet: #8B7CF6;
+    --violet-dim: rgba(139,124,246,0.16);
+    --teal: #2DD4BF;
+    --teal-dim: rgba(45,212,191,0.16);
+    --coral: #FB7185;
+    --coral-dim: rgba(251,113,133,0.16);
+    --fuchsia: #E879F9;
+    --fuchsia-dim: rgba(232,121,249,0.16);
+    --slate: #94A3B8;
+    --slate-dim: rgba(148,163,184,0.16);
+    --lime: #A3E635;
+    --lime-dim: rgba(163,230,53,0.16);
+    --indigo: #818CF8;
+    --indigo-dim: rgba(129,140,248,0.16);
+    --orange: #FB923C;
+    --orange-dim: rgba(251,146,60,0.16);
+    --on-accent: #2A1B02;
+    --font-display: 'Fraunces', serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'Inter', sans-serif;
+  }
+  [data-theme="light"]{
+    --bg: #F7F5FB;
+    --bg-raised: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --line: rgba(28,21,48,0.10);
+    --line-strong: rgba(28,21,48,0.18);
+    --ink: #1C1530;
+    --ink-dim: rgba(28,21,48,0.78);
+    --ink-faint: rgba(28,21,48,0.52);
+  }
+  *{box-sizing:border-box;}
+  html{ font-size:16px; }
+  body{
+    margin:0; color:var(--ink); font-family:var(--font-sans); line-height:1.5; -webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(ellipse 90% 60% at 15% -5%, rgba(139,124,246,0.38), transparent 55%),
+      radial-gradient(ellipse 70% 55% at 100% 0%, rgba(45,212,191,0.28), transparent 55%),
+      radial-gradient(ellipse 80% 60% at 50% 105%, rgba(232,121,249,0.24), transparent 55%),
+      radial-gradient(ellipse 60% 50% at 95% 65%, rgba(56,189,248,0.2), transparent 55%),
+      linear-gradient(180deg, #170F35 0%, #0F0B1F 50%, #0B0818 100%);
+    background-attachment:fixed;
+    transition:background .2s ease;
+  }
+  [data-theme="light"] body{
+    background:
+      radial-gradient(ellipse 90% 60% at 15% -5%, rgba(139,124,246,0.16), transparent 55%),
+      radial-gradient(ellipse 70% 55% at 100% 0%, rgba(45,212,191,0.14), transparent 55%),
+      radial-gradient(ellipse 80% 60% at 50% 105%, rgba(232,121,249,0.12), transparent 55%),
+      radial-gradient(ellipse 60% 50% at 95% 65%, rgba(56,189,248,0.10), transparent 55%),
+      linear-gradient(180deg, #FFFFFF 0%, #F7F5FB 50%, #F3EFFA 100%);
+    background-attachment:fixed;
+  }
+  [data-theme="light"] .card{ box-shadow:0 1px 3px rgba(28,21,48,0.10); }
+  [data-theme="light"] .card:hover{ box-shadow:0 16px 32px rgba(28,21,48,0.14); }
+  [data-theme="light"] .tile{ box-shadow:0 8px 18px rgba(28,21,48,0.18); }
+  [data-theme="light"] .search-suggest{ box-shadow:0 14px 32px rgba(28,21,48,0.14); }
+  a{color:var(--sky);}
+
+  /* Header */
+  .site-header{ position:sticky; top:0; z-index:40; background:var(--bg-raised); border-bottom:1px solid var(--line-strong); }
+  .site-header-inner{ max-width:1200px; margin:0 auto; padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+  .site-logo{ font-family:var(--font-display); font-weight:700; font-size:1.4rem; color:var(--ink); letter-spacing:-0.01em; }
+  .site-logo .dot{ color:var(--amber); }
+  .site-date{ font-family:var(--font-mono); font-size:0.85rem; color:var(--ink-faint); }
+  .header-actions{ display:flex; align-items:center; gap:1.1rem; }
+  .icon-btn{
+    position:relative; display:flex; align-items:center; justify-content:center; width:38px; height:38px;
+    border-radius:8px; border:1px solid var(--line-strong); background:transparent; color:var(--ink-dim); cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .icon-btn:hover{ border-color:var(--amber); color:var(--amber); }
+  .icon-btn svg{ width:19px; height:19px; }
+  .count-badge{
+    position:absolute; top:-7px; right:-7px; min-width:18px; height:18px; padding:0 4px; border-radius:999px;
+    background:var(--amber); color:var(--on-accent); font-family:var(--font-mono); font-size:0.65rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; visibility:hidden;
+  }
+  .count-badge.show{ visibility:visible; }
+  .status-dot{
+    position:absolute; top:-2px; right:-2px; width:11px; height:11px; border-radius:50%;
+    background:var(--teal); border:2px solid var(--bg-raised); display:none;
+  }
+  .status-dot.show{ display:block; }
+  .account-form{ display:flex; flex-direction:column; }
+  .account-form input{
+    background:var(--bg-card); border:1px solid var(--line-strong); border-radius:8px; color:var(--ink);
+    font-family:var(--font-sans); font-size:0.95rem; padding:0.7rem 1rem; width:100%;
+  }
+  .account-form input:focus{ outline:none; border-color:var(--amber); }
+  .auth-message{ font-family:var(--font-sans); font-size:0.85rem; color:var(--ink-faint); margin:0.8rem 0 0; min-height:1.2em; }
+  .auth-message.error{ color:var(--coral); }
+  .auth-message.ok{ color:var(--teal); }
+
+  /* Hero */
+  .hero{ border-bottom:1px solid var(--line); }
+  .hero-inner{
+    max-width:1200px; margin:0 auto; padding:4rem 2rem; display:grid; grid-template-columns:1.1fr 0.9fr; gap:3rem; align-items:center;
+  }
+  .eyebrow{ font-family:var(--font-mono); font-size:0.82rem; text-transform:uppercase; letter-spacing:0.09em; color:var(--amber); font-weight:600; margin:0 0 0.9rem; }
+  .hero-title{ font-family:var(--font-display); font-weight:700; font-size:2.75rem; line-height:1.16; letter-spacing:-0.01em; margin:0 0 1.1rem; color:var(--ink); }
+  .hero-title em{ font-style:normal; color:var(--amber); }
+  .hero-copy{ font-size:1.08rem; color:var(--ink-dim); line-height:1.7; max-width:52ch; margin:0 0 2rem; }
+  .hero-stats{ display:flex; gap:2.25rem; flex-wrap:wrap; }
+  .hero-stat b{ display:block; font-family:var(--font-display); font-size:1.9rem; color:var(--amber); font-weight:600; }
+  .hero-stat span{ font-family:var(--font-mono); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-faint); }
+
+  .tile-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px 12px; max-width:460px; margin:0 auto; }
+  .tile-item{ display:flex; flex-direction:column; align-items:center; gap:0.45rem; background:none; border:none; padding:0; cursor:pointer; }
+  .tile{
+    width:100%; aspect-ratio:1/1; border-radius:14px; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 10px 22px rgba(0,0,0,0.4); pointer-events:none;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .tile-item:hover .tile, .tile-item:focus-visible .tile{ transform:translateY(-3px) scale(1.04); box-shadow:0 14px 28px rgba(0,0,0,0.5); }
+  .tile-item:focus-visible{ outline:2px solid var(--amber); outline-offset:3px; border-radius:14px; }
+  .tile svg{ width:68%; height:68%; pointer-events:none; }
+  .tile-label{ font-family:var(--font-mono); font-size:0.66rem; text-transform:uppercase; letter-spacing:0.02em; color:var(--ink-faint); text-align:center; line-height:1.2; }
+  .cover-phone{ background:linear-gradient(135deg,#6C5CE7,#4FD1FF); }
+  .cover-laptop{ background:linear-gradient(135deg,#FFC24B,#FF7A3D); }
+  .cover-gpu{ background:linear-gradient(135deg,#FF3D68,#FF8A00); }
+  .cover-chip{ background:linear-gradient(135deg,#14B8A6,#22D3EE); }
+  .cover-memory{ background:linear-gradient(135deg,#A855F7,#EC4899); }
+  .cover-other{ background:linear-gradient(135deg,#475569,#94A3B8); }
+  .cover-tablet{ background:linear-gradient(135deg,#84CC16,#22C55E); }
+  .cover-monitor{ background:linear-gradient(135deg,#0EA5E9,#67E8F9); }
+  .cover-tv{ background:linear-gradient(135deg,#DC2626,#F97316); }
+  .cover-console{ background:linear-gradient(135deg,#7C3AED,#4F46E5); }
+
+  /* Toolbar */
+  .toolbar{ background:var(--bg-raised); border-bottom:1px solid var(--line); }
+  .toolbar-inner{ max-width:1200px; margin:0 auto; padding:1.5rem 2rem; display:flex; flex-wrap:wrap; gap:1.25rem; align-items:flex-end; }
+  .search-field{ flex:1; min-width:240px; display:flex; flex-direction:column; gap:0.4rem; position:relative; }
+  .search{ background:var(--bg-card); border:1px solid var(--line-strong); border-radius:8px; color:var(--ink); font-family:var(--font-sans); font-size:0.95rem; padding:0.7rem 1rem; width:100%; }
+  .search::placeholder{color:var(--ink-faint);}
+  .search:focus{outline:none; border-color:var(--amber);}
+  .field{ display:flex; flex-direction:column; gap:0.4rem; }
+  .field-label{ font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-faint); }
+  .select-input{
+    background:var(--bg-card); border:1px solid var(--line-strong); color:var(--ink-dim); font-family:var(--font-sans);
+    font-size:0.9rem; padding:0.68rem 0.9rem; border-radius:8px; min-width:170px; cursor:pointer;
+  }
+  .select-input:focus{outline:none; border-color:var(--amber);}
+
+  .search-suggest{
+    position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:50; background:var(--bg-card);
+    border:1px solid var(--line-strong); border-radius:10px; box-shadow:0 14px 32px rgba(0,0,0,0.45);
+    overflow:hidden; display:none;
+  }
+  .search-suggest.show{ display:block; }
+  .suggest-item{
+    display:flex; align-items:center; gap:0.7rem; width:100%; padding:0.6rem 0.9rem; background:none; border:none;
+    cursor:pointer; text-align:left; color:var(--ink); border-bottom:1px solid var(--line);
+  }
+  .suggest-item:last-child{ border-bottom:none; }
+  .suggest-item:hover, .suggest-item.active{ background:var(--bg-raised); }
+  .suggest-icon{ width:30px; height:30px; border-radius:7px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .suggest-icon svg{ width:19px; height:15px; }
+  .suggest-main{ min-width:0; flex:1; }
+  .suggest-name{ font-size:0.86rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .suggest-meta{ font-family:var(--font-mono); font-size:0.72rem; color:var(--ink-faint); }
+  .suggest-price{ font-family:var(--font-mono); font-size:0.78rem; color:var(--amber); flex-shrink:0; }
+
+  /* Recently viewed */
+  .recent-strip{ background:var(--bg-raised); border-bottom:1px solid var(--line); }
+  .recent-strip-inner{ max-width:1200px; margin:0 auto; padding:1.1rem 2rem; }
+  .recent-strip-label{ font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-faint); margin:0 0 0.7rem; }
+  .recent-strip-row{ display:flex; gap:0.8rem; overflow-x:auto; padding-bottom:0.2rem; }
+  .recent-chip{
+    flex-shrink:0; width:190px; display:flex; gap:0.6rem; align-items:center; background:var(--bg-card);
+    border:1px solid var(--line); border-radius:10px; padding:0.55rem 0.7rem; cursor:pointer; text-align:left;
+    transition:border-color .15s ease; font-family:var(--font-sans); color:var(--ink);
+  }
+  .recent-chip:hover{ border-color:var(--amber); }
+  .recent-chip-icon{ width:36px; height:36px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .recent-chip-icon svg{ width:22px; height:17px; }
+  .recent-chip-main{ min-width:0; }
+  .recent-chip-name{ display:block; font-size:0.82rem; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .recent-chip-price{ display:block; font-family:var(--font-mono); font-size:0.75rem; color:var(--ink-faint); }
+
+  /* Theme toggle */
+  .theme-toggle svg{ width:18px; height:18px; }
+  .theme-toggle .sun-icon{ display:none; }
+  [data-theme="light"] .theme-toggle .moon-icon{ display:none; }
+  [data-theme="light"] .theme-toggle .sun-icon{ display:block; }
+
+  /* Catalog */
+  .catalog{ padding:2.5rem 0 6rem; }
+  .catalog-inner{ max-width:1200px; margin:0 auto; padding:0 2rem; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:1.75rem; }
+
+  .gen-badge, .pick-badge{
+    font-family:var(--font-mono); font-size:0.64rem; text-transform:uppercase; letter-spacing:0.03em;
+    padding:0.26rem 0.55rem; border-radius:999px; font-weight:600; white-space:nowrap;
+    background:rgba(10,10,12,0.42); backdrop-filter:blur(6px); color:#fff;
+  }
+  .gen-badge.new{ color:var(--amber); background:rgba(10,10,12,0.62); border:1px solid rgba(255,178,56,0.75); }
+  .gen-badge.current{ color:#7DD3FC; }
+  .gen-badge.legacy{ color:rgba(255,255,255,0.68); }
+  .gen-badge.upcoming{ color:#D8B4FE; }
+  .pick-badge{ color:var(--amber); background:rgba(10,10,12,0.62); border:1px solid rgba(255,178,56,0.75); }
+  .status-badge{ font-family:var(--font-sans); font-size:0.88rem; color:var(--ink-faint); }
+  .status-badge.unconfirmed{ color:var(--coral); font-weight:500; }
+
+  .cat-badge{
+    font-family:var(--font-mono); font-size:0.66rem; text-transform:uppercase; letter-spacing:0.03em;
+    padding:0.24rem 0.55rem; border-radius:999px; border:1px solid; font-weight:600; white-space:nowrap;
+  }
+  .cat-badge.phone{background:var(--violet-dim); color:var(--violet); border-color:var(--violet);}
+  .cat-badge.laptop{background:var(--amber-dim); color:var(--amber); border-color:var(--amber);}
+  .cat-badge.gpu{background:var(--coral-dim); color:var(--coral); border-color:var(--coral);}
+  .cat-badge.chip{background:var(--teal-dim); color:var(--teal); border-color:var(--teal);}
+  .cat-badge.memory{background:var(--fuchsia-dim); color:var(--fuchsia); border-color:var(--fuchsia);}
+  .cat-badge.other{background:var(--slate-dim); color:var(--slate); border-color:var(--slate);}
+  .cat-badge.tablet{background:var(--lime-dim); color:var(--lime); border-color:var(--lime);}
+  .cat-badge.monitor{background:var(--sky-dim); color:var(--sky); border-color:var(--sky);}
+  .cat-badge.tv{background:var(--indigo-dim); color:var(--indigo); border-color:var(--indigo);}
+  .cat-badge.console{background:var(--orange-dim); color:var(--orange); border-color:var(--orange);}
+
+  .card{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,0.4); display:flex; flex-direction:column;
+    transition:box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+  }
+  .card:hover{ transform:translateY(-4px); box-shadow:0 20px 40px rgba(0,0,0,0.45); }
+  .card.selected{ border-color:var(--amber); box-shadow:0 0 0 1px var(--amber); }
+
+  .card-cover{ position:relative; height:220px; display:flex; flex-direction:column; flex-shrink:0; }
+  .card-cover-top{ flex-shrink:0; padding:0.75rem 0.75rem 0; display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem; }
+  .card-cover .card-badges{ display:flex; gap:0.35rem; flex-wrap:wrap; min-width:0; flex:1; }
+  .card-cover-icon{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; }
+  .card-cover svg{ width:165px; height:127px; filter:drop-shadow(0 6px 14px rgba(0,0,0,0.25)); }
+  .card-cover .cat-badge{ background:rgba(10,10,12,0.42); backdrop-filter:blur(6px); color:#fff; border-color:rgba(255,255,255,0.4); }
+
+  .wishlist-btn{
+    flex-shrink:0; z-index:2; width:32px; height:32px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; border:none; cursor:pointer;
+    background:rgba(10,10,12,0.42); backdrop-filter:blur(6px); color:#fff;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .wishlist-btn:hover{ transform:scale(1.08); }
+  .wishlist-btn svg{ width:16px; height:16px; }
+  .wishlist-btn.on{ background:var(--coral); color:#fff; }
+  .wishlist-btn.on svg{ fill:currentColor; }
+
+  .card-body{ padding:1.35rem 1.4rem 1.5rem; display:flex; flex-direction:column; gap:0.9rem; }
+
+  .card-name{ font-family:var(--font-display); font-weight:600; font-size:1.3rem; line-height:1.25; margin:0 0 0.3rem; color:var(--ink); }
+  .card-meta{ font-family:var(--font-mono); font-size:0.85rem; color:var(--ink-faint); margin:0; display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap; }
+  .card-meta .cat-badge{ margin-right:0.15rem; }
+  .card-meta .unconfirmed{ color:var(--coral); }
+
+  .card-summary{ font-size:1rem; line-height:1.65; color:var(--ink-dim); margin:0; }
+
+  .card-specs{ list-style:none; margin:0; padding:0.9rem 0 0; display:flex; flex-direction:column; gap:0.55rem; border-top:1px solid var(--line); }
+  .card-specs li{ display:flex; justify-content:space-between; gap:1rem; }
+  .spec-key{ font-family:var(--font-mono); text-transform:uppercase; font-size:0.72rem; letter-spacing:0.04em; color:var(--ink-faint); flex-shrink:0; padding-top:0.15rem; }
+  .spec-val{ font-size:0.92rem; color:var(--ink-dim); text-align:right; }
+
+  .card-rating{ display:flex; }
+  .rating-pill{ font-family:var(--font-mono); font-size:0.82rem; padding:0.4rem 0.85rem; border-radius:999px; border:1px solid; font-weight:500; }
+  .rating-pill.rec-high{ color:var(--amber); border-color:var(--amber); background:var(--amber-dim); }
+  .rating-pill.rec-good{ color:var(--sky); border-color:var(--sky); background:var(--sky-dim); }
+  .rating-pill.rec-mid{ color:var(--ink-dim); border-color:var(--line-strong); background:transparent; }
+  .rating-pill.rec-low{ color:var(--coral); border-color:var(--coral); background:var(--coral-dim); }
+
+  .card-actions{ display:flex; flex-direction:column; gap:0.6rem; }
+  .card-actions-row{ display:flex; gap:0.6rem; }
+  .btn-secondary, .compare-btn, .cart-btn{
+    font-family:var(--font-sans); font-size:0.88rem; font-weight:500; padding:0.65rem 1rem;
+    border:1px solid var(--line-strong); background:transparent; color:var(--ink-dim); border-radius:8px; cursor:pointer; white-space:nowrap;
+    transition:border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .btn-secondary{ width:100%; }
+  .btn-secondary:hover{ border-color:var(--amber); color:var(--amber); }
+  .card-actions-row .compare-btn, .card-actions-row .cart-btn{ flex:1; }
+  .compare-btn.on{ background:var(--amber); border-color:var(--amber); color:var(--on-accent); }
+  .cart-btn:hover{ border-color:var(--teal); color:var(--teal); }
+  .cart-btn.on{ background:var(--teal); border-color:var(--teal); color:var(--on-accent); }
+
+  .empty{ text-align:center; padding:4rem 1rem; color:var(--ink-faint); font-family:var(--font-sans); font-size:1rem; grid-column:1/-1; }
+
+  .card-price{ color:var(--amber); font-weight:700; font-size:1.05rem; }
+
+  .rec-toggle{ display:flex; align-items:center; gap:0.55rem; font-family:var(--font-sans); font-size:0.9rem; color:var(--ink-dim); padding:0.68rem 0; cursor:pointer; white-space:nowrap; }
+  .rec-toggle input{ width:17px; height:17px; accent-color:var(--amber); cursor:pointer; }
+
+  .load-more-wrap{ display:flex; justify-content:center; margin-top:2.5rem; }
+  .btn-loadmore{
+    font-family:var(--font-sans); font-size:0.9rem; font-weight:600; padding:0.75rem 1.75rem;
+    border:1px solid var(--line-strong); background:var(--bg-card); color:var(--ink); border-radius:8px; cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .btn-loadmore:hover{ border-color:var(--amber); color:var(--amber); }
+  .load-more-count{ display:block; margin-top:0.4rem; font-size:0.78rem; color:var(--ink-faint); text-align:center; }
+
+  .tray{
+    position:sticky; bottom:0; left:0; right:0; background:var(--bg-raised); border-top:1px solid var(--amber);
+    padding:1rem 2rem; display:none; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; z-index:20;
+  }
+  .tray.show{display:flex;}
+  .tray-label{ font-family:var(--font-sans); font-size:0.92rem; color:var(--ink-dim); }
+  .tray-label b{color:var(--amber);}
+  .tray-actions{display:flex; gap:0.6rem;}
+  .btn-primary{ font-family:var(--font-sans); font-size:0.88rem; font-weight:600; padding:0.6rem 1.1rem; background:var(--amber); color:var(--on-accent); border:none; border-radius:8px; cursor:pointer; text-decoration:none; display:inline-block; }
+  .btn-ghost{ font-family:var(--font-sans); font-size:0.88rem; font-weight:500; padding:0.6rem 1.1rem; background:transparent; color:var(--ink-dim); border:1px solid var(--line-strong); border-radius:8px; cursor:pointer; }
+
+  .overlay{ position:fixed; inset:0; background:rgba(4,5,7,0.82); display:none; align-items:flex-start; justify-content:center; padding:4vh 1.5rem; overflow-y:auto; z-index:50; }
+  .overlay.show{display:flex;}
+  .modal{ background:var(--bg-card); border:1px solid var(--line-strong); border-radius:14px; max-width:960px; width:100%; overflow:hidden; }
+  .modal-body-pad{ padding:2rem; }
+  .modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1.4rem; gap:1rem; padding:2rem 2rem 0; }
+  .share-link-row{ display:flex; gap:0.6rem; align-items:center; padding:0 2rem 1.2rem; margin-top:-0.6rem; }
+  .share-link-row input{
+    flex:1; min-width:0; background:var(--bg-card); border:1px solid var(--line-strong); border-radius:8px;
+    color:var(--ink-dim); font-family:var(--font-mono); font-size:0.82rem; padding:0.6rem 0.9rem;
+  }
+  .share-link-row input:focus{ outline:none; border-color:var(--amber); }
+  .modal-title{ font-family:var(--font-display); font-weight:700; font-size:1.45rem; margin:0; }
+  .modal-close{ background:transparent; border:1px solid var(--line-strong); color:var(--ink-dim); font-family:var(--font-sans); font-size:0.85rem; padding:0.5rem 0.9rem; border-radius:8px; cursor:pointer; flex-shrink:0; }
+  table.compare-table{ width:100%; border-collapse:collapse; font-family:var(--font-sans); font-size:0.9rem; }
+  table.compare-table th, table.compare-table td{ border-bottom:1px solid var(--line); padding:0.65rem 0.7rem; text-align:left; vertical-align:top; }
+  table.compare-table th{ color:var(--amber); font-weight:600; font-family:var(--font-mono); text-transform:uppercase; font-size:0.72rem; letter-spacing:0.04em; }
+  table.compare-table td.spec-label{ color:var(--ink-faint); font-family:var(--font-mono); text-transform:uppercase; font-size:0.7rem; letter-spacing:0.04em; white-space:nowrap; }
+  table.compare-table td{color:var(--ink-dim);}
+  table.compare-table td.compare-winner{ color:var(--amber); font-weight:600; white-space:nowrap; }
+
+  .detail-cover{ height:190px; display:flex; align-items:center; justify-content:center; }
+  .detail-cover svg{ width:170px; height:130px; filter:drop-shadow(0 8px 16px rgba(0,0,0,0.3)); }
+  .detail-meta{ display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap; }
+  .detail-price{ font-family:var(--font-mono); font-size:1.1rem; color:var(--amber); font-weight:600; }
+  .detail-summary{ font-size:1.05rem; color:var(--ink-dim); line-height:1.7; margin:0.9rem 0 0; }
+  .verdict{
+    display:inline-flex; align-items:center; gap:0.4rem; padding:0.5rem 0.9rem; border-radius:999px;
+    font-family:var(--font-sans); font-size:0.88rem; font-weight:600; margin:1rem 0 1.25rem;
+  }
+  .verdict.rec-high{ background:var(--amber-dim); color:var(--amber); border:1px solid var(--amber); }
+  .verdict.rec-good{ background:var(--sky-dim); color:var(--sky); border:1px solid var(--sky); }
+  .verdict.rec-mid{ background:rgba(245,243,238,0.08); color:var(--ink-dim); border:1px solid var(--line-strong); }
+  .verdict.rec-low{ background:var(--coral-dim); color:var(--coral); border:1px solid var(--coral); }
+
+  .ratings-block{ margin:0 0 1.5rem; }
+  .rating-row{ display:flex; align-items:center; gap:0.85rem; margin:0.55rem 0; }
+  .rating-label{ width:104px; flex-shrink:0; font-family:var(--font-sans); font-size:0.85rem; font-weight:500; color:var(--ink-dim); }
+  .rating-track{ flex:1; height:8px; border-radius:4px; background:rgba(245,243,238,0.1); overflow:hidden; }
+  .rating-fill{ height:100%; border-radius:4px; }
+  .rating-fill.quality{ background:var(--amber); }
+  .rating-fill.durability{ background:var(--teal); }
+  .rating-fill.value{ background:var(--coral); }
+  .rating-fill.specs{ background:var(--violet); }
+  .rating-score{ width:42px; text-align:right; font-family:var(--font-sans); font-size:0.85rem; color:var(--ink-dim); flex-shrink:0; }
+
+  .detail-subhead{ font-family:var(--font-mono); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--amber); margin:0 0 0.8rem; }
+  .detail-specs{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:0.6rem 1.3rem; margin-bottom:1.4rem; }
+  .detail-spec{ display:flex; justify-content:space-between; gap:0.6rem; font-size:0.92rem; border-bottom:1px solid var(--line); padding-bottom:0.45rem; }
+  .detail-spec-key{ color:var(--ink-faint); font-family:var(--font-mono); text-transform:uppercase; font-size:0.7rem; letter-spacing:0.04em; padding-top:0.1rem; }
+  .detail-spec-val{ color:var(--ink); text-align:right; }
+  .detail-actions{ display:flex; align-items:center; justify-content:flex-end; gap:0.75rem; flex-wrap:wrap; }
+  .unreleased-note{ font-family:var(--font-sans); font-size:0.85rem; color:var(--ink-faint); font-style:italic; margin-right:auto; }
+
+  .panel-item{ display:flex; gap:1rem; align-items:center; padding:1rem 0; border-bottom:1px solid var(--line); }
+  .panel-item:last-child{ border-bottom:none; }
+  .panel-item-icon{ width:52px; height:52px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .panel-item-icon svg{ width:34px; height:26px; }
+  .panel-item-main{ flex:1; min-width:0; }
+  .panel-item-name{ font-family:var(--font-display); font-weight:600; font-size:1.05rem; margin:0 0 0.2rem; color:var(--ink); }
+  .panel-item-meta{ font-family:var(--font-mono); font-size:0.78rem; color:var(--ink-faint); margin:0; }
+  .panel-amazon-link{ display:inline-block; margin-top:0.35rem; font-family:var(--font-sans); font-size:0.78rem; font-weight:600; color:var(--sky); text-decoration:none; }
+  .panel-amazon-link:hover{ text-decoration:underline; }
+  .panel-item-actions{ display:flex; align-items:center; gap:0.75rem; flex-shrink:0; }
+  .qty-stepper{ display:flex; align-items:center; gap:0.5rem; border:1px solid var(--line-strong); border-radius:8px; padding:0.25rem 0.5rem; }
+  .qty-stepper button{ background:transparent; border:none; color:var(--ink-dim); font-size:1rem; width:22px; height:22px; cursor:pointer; line-height:1; }
+  .qty-stepper button:hover{ color:var(--amber); }
+  .qty-stepper span{ font-family:var(--font-mono); font-size:0.9rem; min-width:1.2em; text-align:center; }
+  .panel-item-price{ font-family:var(--font-mono); font-weight:700; color:var(--amber); min-width:70px; text-align:right; }
+  .panel-remove{ background:transparent; border:none; color:var(--ink-faint); cursor:pointer; font-size:0.78rem; text-decoration:underline; padding:0; }
+  .panel-remove:hover{ color:var(--coral); }
+  .panel-summary{ display:flex; justify-content:space-between; align-items:center; padding-top:1.25rem; margin-top:0.5rem; }
+  .panel-summary-total{ font-family:var(--font-display); font-size:1.3rem; font-weight:600; color:var(--ink); }
+  .panel-empty{ text-align:center; padding:3rem 1rem; color:var(--ink-faint); font-family:var(--font-sans); }
+
+  footer{ max-width:1200px; margin:0 auto; padding:2rem 2rem 3rem; font-family:var(--font-sans); font-size:0.9rem; color:var(--ink-faint); line-height:1.75; }
+  .footer-link{
+    background:none; border:none; padding:0; font:inherit; color:var(--sky); text-decoration:underline;
+    cursor:pointer;
+  }
+  .legal-text p{ margin:0 0 1.1rem; line-height:1.65; color:var(--ink-dim); }
+  .legal-text strong{ color:var(--ink); }
+
+  .welcome-benefits{ background:var(--bg-card); border:1px solid var(--line); border-radius:10px; padding:1rem 1.2rem; margin-bottom:1.3rem; }
+  .welcome-benefits-title{ margin:0 0 0.5rem; font-family:var(--font-mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--amber); }
+  .welcome-benefits ul{ margin:0; padding-left:1.2rem; color:var(--ink-dim); font-size:0.92rem; line-height:1.8; }
+  .welcome-consent{ display:flex; align-items:flex-start; gap:0.7rem; cursor:pointer; margin-bottom:1.4rem; }
+  .welcome-consent input{ margin-top:0.25rem; flex-shrink:0; width:16px; height:16px; accent-color:var(--amber); cursor:pointer; }
+  .welcome-consent span{ font-size:0.88rem; color:var(--ink-dim); line-height:1.55; }
+  .welcome-actions{ display:flex; gap:0.8rem; flex-wrap:wrap; }
+  .welcome-actions button{ flex:1; min-width:180px; }
+  .welcome-actions button:disabled{ opacity:0.45; cursor:not-allowed; }
+
+  @media (max-width:820px){ .hero-inner{ grid-template-columns:1fr; } .tile-grid{ margin:0; max-width:420px; } }
+  @media (max-width:520px){ .tile-grid{ grid-template-columns:repeat(3,1fr); max-width:300px; } }
+  @media (max-width:720px){
+    .select-input{min-width:0; width:100%;}
+    .field{width:100%;}
+    .grid{grid-template-columns:1fr;}
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <span class="site-logo">Release Ledger<span class="dot">.</span></span>
+    <div class="header-actions">
+      <span class="site-date" id="datestamp"></span>
+      <button class="icon-btn theme-toggle" id="themeToggle" title="Toggle light / dark theme" type="button">
+        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2.5 12H5M19 12h2.5M4.2 19.8L6 18M18 6l1.8-1.8"/></svg>
+      </button>
+      <button class="icon-btn" id="accountBtn" title="Account" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        <span class="status-dot" id="accountIndicator"></span>
+      </button>
+      <button class="icon-btn" id="wishlistBtn" title="Wishlist" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.2-4.4-9.7-8.7C.6 8.6 2 4.6 6 4c2.1-.3 3.8.8 6 3.3C14.2 4.8 15.9 3.7 18 4c4 .6 5.4 4.6 3.7 8.3C19.2 16.6 12 21 12 21z"/></svg>
+        <span class="count-badge" id="wishlistCount">0</span>
+      </button>
+      <button class="icon-btn" id="cartBtn" title="Cart" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.3"/><circle cx="19" cy="21" r="1.3"/><path d="M1 1h4l2.4 13.2a2 2 0 0 0 2 1.6h9.4a2 2 0 0 0 2-1.6L23 6H6.2"/></svg>
+        <span class="count-badge" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <p class="eyebrow">Tech Launch Intelligence</p>
+      <h1 class="hero-title">Release Ledger<em>.</em></h1>
+      <p class="hero-copy">A full history of phone, laptop, GPU, chip, and memory releases — each rated on quality, durability, value, and specs, with a side-by-side comparison tool built in.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><b id="statTotal">0</b><span>Entries logged</span></div>
+        <div class="hero-stat"><b id="statBrands">0</b><span>Brands tracked</span></div>
+        <div class="hero-stat"><b id="statRecommended">0</b><span>Highly recommended</span></div>
+        <div class="hero-stat"><b>4</b><span>Max compare</span></div>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="tile-grid" id="heroTiles"></div>
+    </div>
+  </div>
+</section>
+
+<section class="toolbar">
+  <div class="toolbar-inner">
+    <div class="search-field">
+      <label class="field-label" for="searchInput">Search</label>
+      <input class="search" id="searchInput" type="text" placeholder="Search a product, brand, or chip..." autocomplete="off">
+      <div class="search-suggest" id="searchSuggest"></div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="categorySelect">Products</label>
+      <select class="select-input" id="categorySelect">
+        <option value="all">All Products</option>
+        <option value="phone">Phones</option>
+        <option value="tablet">Tablets</option>
+        <option value="laptop">Laptops</option>
+        <option value="gpu">GPUs</option>
+        <option value="chip">Chips</option>
+        <option value="memory">Memory</option>
+        <option value="monitor">Monitors</option>
+        <option value="tv">TVs</option>
+        <option value="console">Gaming Consoles</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label" for="brandSelect">Brand</label>
+      <select class="select-input" id="brandSelect">
+        <option value="all">All Brands</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label" for="genSelect">Generation</label>
+      <select class="select-input" id="genSelect">
+        <option value="all">All Generations</option>
+        <option value="upcoming">Upcoming</option>
+        <option value="new">New (last 6mo)</option>
+        <option value="current">Current (up to 2yr)</option>
+        <option value="legacy">Legacy</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label" for="sortSelect">Sort</label>
+      <select class="select-input" id="sortSelect">
+        <option value="category" selected>By category (phones → laptops → other)</option>
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="rating-desc">Top rated first</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label" for="maxPriceSelect">Max price</label>
+      <select class="select-input" id="maxPriceSelect">
+        <option value="">Any price</option>
+        <option value="500">Under $500</option>
+        <option value="700">Under $700</option>
+        <option value="1000">Under $1,000</option>
+        <option value="1500">Under $1,500</option>
+        <option value="2000">Under $2,000</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label" for="displayTypeSelect">Display type</label>
+      <select class="select-input" id="displayTypeSelect">
+        <option value="">Any display</option>
+        <option value="oled">OLED / AMOLED</option>
+        <option value="lcd">LCD / IPS</option>
+        <option value="mini-led">Mini-LED</option>
+        <option value="micro-led">Micro-LED</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-label" for="minRamSelect">RAM / storage</label>
+      <select class="select-input" id="minRamSelect">
+        <option value="">Any amount</option>
+        <option value="8">8GB+</option>
+        <option value="16">16GB+</option>
+        <option value="32">32GB+</option>
+        <option value="64">64GB+</option>
+        <option value="256">256GB+</option>
+        <option value="1024">1TB+</option>
+      </select>
+    </div>
+    <div class="field">
+      <span class="field-label">Filter</span>
+      <label class="rec-toggle"><input type="checkbox" id="recToggle"><span>Highly recommended only</span></label>
+    </div>
+    <div class="field">
+      <span class="field-label">Filter</span>
+      <label class="rec-toggle"><input type="checkbox" id="confirmedToggle"><span>Confirmed / released only</span></label>
+    </div>
+  </div>
+</section>
+
+<section class="recent-strip" id="recentSection" style="display:none;">
+  <div class="recent-strip-inner">
+    <p class="recent-strip-label">Recently viewed</p>
+    <div class="recent-strip-row" id="recentRow"></div>
+  </div>
+</section>
+
+<main class="catalog" id="catalog">
+  <div class="catalog-inner">
+    <div class="grid" id="grid"></div>
+    <div class="load-more-wrap" id="loadMoreWrap"></div>
+  </div>
+</main>
+
+<div class="tray" id="tray">
+  <div class="tray-label"><b id="trayCount">0</b> selected for comparison</div>
+  <div class="tray-actions">
+    <button class="btn-ghost" id="clearBtn">Clear</button>
+    <button class="btn-primary" id="compareBtn">Compare</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Side-by-side comparison</p>
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <button class="btn-ghost" id="shareCompareBtn" type="button" style="width:auto;">Copy share link</button>
+        <button class="modal-close" id="closeModal">Close</button>
+      </div>
+    </div>
+    <div class="share-link-row" id="shareLinkRow" style="display:none;">
+      <input type="text" id="shareLinkInput" readonly>
+      <button class="btn-ghost" id="shareLinkCopyBtn" type="button" style="width:auto;">Copy</button>
+    </div>
+    <div class="modal-body-pad" style="overflow-x:auto; padding-top:0;">
+      <table class="compare-table" id="compareTable"></table>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="detailOverlay">
+  <div class="modal">
+    <div class="detail-cover" id="detailCover"></div>
+    <div class="modal-head">
+      <p class="modal-title" id="detailTitle"></p>
+      <button class="modal-close" id="closeDetail">Close</button>
+    </div>
+    <div id="detailBody" class="modal-body-pad" style="padding-top:0;"></div>
+  </div>
+</div>
+
+<div class="overlay" id="accountOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Account</p>
+      <button class="modal-close" id="closeAccount">Close</button>
+    </div>
+    <div class="modal-body-pad" style="padding-top:0;" id="accountBody"></div>
+  </div>
+</div>
+
+<div class="overlay" id="wishlistOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Your wishlist</p>
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <button class="btn-ghost" id="clearWishlistBtn" type="button" style="width:auto;">Clear all</button>
+        <button class="modal-close" id="closeWishlist">Close</button>
+      </div>
+    </div>
+    <div class="modal-body-pad" style="padding-top:0;" id="wishlistBody"></div>
+  </div>
+</div>
+
+<div class="overlay" id="cartOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Your cart</p>
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <button class="btn-ghost" id="clearCartBtn" type="button" style="width:auto;">Clear all</button>
+        <button class="modal-close" id="closeCart">Close</button>
+      </div>
+    </div>
+    <div class="modal-body-pad" style="padding-top:0;" id="cartBody"></div>
+  </div>
+</div>
+
+<footer>
+  Entries are manually curated from public launch coverage and manufacturer specs. Recent 2026 items include a
+  mix of confirmed releases and pre-launch reporting (marked "unconfirmed" where specs weren't official at
+  time of writing). Historical entries (older iPhones, Galaxy S phones, GPU and memory generations) reflect
+  specs at original launch, not current pricing. Generation tags: New = released in the last 6 months,
+  Current = 6 months to 2 years old, Legacy = more than 2 years old, Upcoming = not yet released. Quality,
+  Durability, Value, and Specs ratings are editorial estimates for demonstration purposes, not verified lab
+  benchmarks — open any product's full specs for the breakdown. "Buy on Amazon" links open an Amazon search for
+  that product's name and brand rather than a specific listing, since exact product pages can't be verified here.
+  Products that haven't launched yet, or whose specs are still unconfirmed, show no purchase link at all. Your
+  wishlist and cart are saved in this browser (via local storage), and sync to your account if you're signed in.
+  <br><br>
+  <button type="button" class="footer-link" id="footerTermsLink">Terms of Service</button>
+  &middot;
+  <button type="button" class="footer-link" id="footerPrivacyLink">Privacy Policy</button>
+</footer>
+
+<div class="overlay" id="welcomeGate">
+  <div class="modal">
+    <div class="modal-body-pad" style="padding-top:2rem;">
+      <p class="modal-title" style="margin-bottom:0.6rem;">Welcome to Release Ledger</p>
+      <p style="color:var(--ink-dim); line-height:1.6; margin:0 0 1.3rem;">A full history of phone, laptop, GPU, chip, and memory releases, with ratings and a side-by-side comparison tool.</p>
+      <div class="welcome-benefits">
+        <p class="welcome-benefits-title">Signing in is optional, but it gets you:</p>
+        <ul>
+          <li>Your wishlist and cart synced across every device</li>
+          <li>Nothing lost if you clear your browser data</li>
+          <li>A faster way back to products you're comparing</li>
+        </ul>
+      </div>
+      <label class="welcome-consent">
+        <input type="checkbox" id="welcomeConsentCheck">
+        <span>I agree to the <button type="button" class="footer-link" id="welcomeTermsLink">Terms of Service</button> and <button type="button" class="footer-link" id="welcomePrivacyLink">Privacy Policy</button>, including the use of local storage (and, if I sign in, a Supabase-hosted account) to save my wishlist and cart.</span>
+      </label>
+      <div class="welcome-actions">
+        <button type="button" class="btn-primary" id="welcomeLoginBtn" disabled>Log in or sign up</button>
+        <button type="button" class="btn-ghost" id="welcomeGuestBtn" disabled>Continue as guest</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="termsOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Terms of Service</p>
+      <button class="modal-close" id="closeTerms">Close</button>
+    </div>
+    <div class="modal-body-pad legal-text" style="padding-top:0;">
+      <p><em>Last updated: August 23, 2026</em></p>
+      <p>Release Ledger is an independent, hobbyist reference site for comparing consumer tech products. By using this site, you agree to the following:</p>
+      <p><strong>1. Informational use only.</strong> Specs, prices, and ratings are compiled for reference and may contain errors, be outdated, or differ from a manufacturer's official listing. Always verify details with the manufacturer or retailer before making a purchase decision.</p>
+      <p><strong>2. Not an official retailer.</strong> Release Ledger is not affiliated with Apple, Samsung, Google, Amazon, Nvidia, or any other brand referenced on this site. "Buy on Amazon" links open a generic Amazon search and are not guaranteed to lead to the exact product shown.</p>
+      <p><strong>3. Accounts.</strong> If you create an account, you're responsible for keeping your login credentials secure and for all activity under your account. You must provide a valid email address and be old enough to consent to data processing under the laws of your country (13+ in the US, 16+ in much of the EU unless a lower age is set by local law).</p>
+      <p><strong>4. No warranty.</strong> This site is provided "as is," with no guarantee of accuracy, uptime, or fitness for any particular purpose. We are not liable for any decisions made based on information found here.</p>
+      <p><strong>5. Changes.</strong> These terms may be updated as the site evolves. Continued use after a change means you accept the updated terms.</p>
+      <p>Questions? Reach out to the site owner directly.</p>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="privacyOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <p class="modal-title">Privacy Policy</p>
+      <button class="modal-close" id="closePrivacy">Close</button>
+    </div>
+    <div class="modal-body-pad legal-text" style="padding-top:0;">
+      <p><em>Last updated: August 23, 2026</em></p>
+      <p><strong>What we store locally.</strong> Your browser's local storage saves your wishlist, cart, recently viewed items, and site preferences (like theme). This data stays on your device and is never sent anywhere unless you create an account.</p>
+      <p><strong>What we store if you create an account.</strong> We use Supabase to handle accounts. If you sign up, we store your email address and an encrypted password (we never see your password in plain text), plus your wishlist and cart items, so they can sync across your devices. We don't collect names, payment details, or shipping addresses — there's no checkout on this site.</p>
+      <p><strong>Cookies and similar storage.</strong> We don't use third-party advertising or tracking cookies. Supabase stores your login session in local storage rather than a cookie. Google Fonts, loaded for site typography, may receive your IP address as a normal part of serving font files.</p>
+      <p><strong>Data sharing.</strong> We do not sell or share your data with third parties. Your account data lives in our Supabase database and is only accessible to your own account (enforced by database-level security rules) and the site operator for maintenance purposes.</p>
+      <p><strong>Your rights.</strong> You can clear your wishlist/cart at any time from the site itself. To delete your account and associated data entirely, contact the site owner.</p>
+      <p><strong>Changes.</strong> This policy may be updated as the site evolves; check back periodically.</p>
+      <p>This is a small, independently run site — if you have privacy questions or concerns, reach out to the site owner directly.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const COVERS = {
+  phone: '<svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="86" y="10" width="46" height="86" rx="8" fill="#fff" opacity="0.18" transform="rotate(8 109 53)"/>'
+    + '<rect x="54" y="8" width="52" height="98" rx="9" fill="#fff" opacity="0.95"/>'
+    + '<rect x="60" y="20" width="40" height="66" rx="2" fill="#000" opacity="0.16"/>'
+    + '<circle cx="80" cy="15" r="2" fill="#000" opacity="0.35"/>'
+    + '<rect x="70" y="99" width="20" height="3" rx="1.5" fill="#000" opacity="0.25"/>'
+    + '<line x1="66" y1="30" x2="94" y2="30" stroke="#fff" stroke-opacity="0.55" stroke-width="2"/>'
+    + '<line x1="66" y1="40" x2="86" y2="40" stroke="#fff" stroke-opacity="0.4" stroke-width="2"/>'
+    + '<circle cx="70" cy="60" r="11" fill="#fff" opacity="0.3"/>'
+    + '</svg>',
+  laptop: '<svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="35" y="16" width="90" height="60" rx="4" fill="#fff" opacity="0.95"/>'
+    + '<rect x="41" y="22" width="78" height="48" rx="2" fill="#000" opacity="0.16"/>'
+    + '<line x1="47" y1="32" x2="95" y2="32" stroke="#fff" stroke-opacity="0.55" stroke-width="2"/>'
+    + '<line x1="47" y1="42" x2="80" y2="42" stroke="#fff" stroke-opacity="0.4" stroke-width="2"/>'
+    + '<line x1="47" y1="52" x2="88" y2="52" stroke="#fff" stroke-opacity="0.3" stroke-width="2"/>'
+    + '<path d="M18 80 L142 80 L152 100 L8 100 Z" fill="#fff" opacity="0.88"/>'
+    + '<rect x="70" y="87" width="20" height="4" rx="2" fill="#000" opacity="0.25"/>'
+    + '</svg>',
+  gpu: '<svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="12" y="42" width="10" height="38" rx="2" fill="#fff" opacity="0.75"/>'
+    + '<rect x="20" y="35" width="122" height="52" rx="8" fill="#fff" opacity="0.95"/>'
+    + '<circle cx="57" cy="61" r="21" fill="#000" opacity="0.18"/>'
+    + '<circle cx="57" cy="61" r="21" stroke="#fff" stroke-opacity="0.55" stroke-width="2"/>'
+    + '<line x1="57" y1="43" x2="57" y2="79" stroke="#fff" stroke-opacity="0.4" stroke-width="1.5"/>'
+    + '<line x1="39" y1="61" x2="75" y2="61" stroke="#fff" stroke-opacity="0.4" stroke-width="1.5"/>'
+    + '<circle cx="108" cy="61" r="21" fill="#000" opacity="0.18"/>'
+    + '<circle cx="108" cy="61" r="21" stroke="#fff" stroke-opacity="0.55" stroke-width="2"/>'
+    + '<line x1="108" y1="43" x2="108" y2="79" stroke="#fff" stroke-opacity="0.4" stroke-width="1.5"/>'
+    + '<line x1="90" y1="61" x2="126" y2="61" stroke="#fff" stroke-opacity="0.4" stroke-width="1.5"/>'
+    + '</svg>',
+  chip: '<svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<path d="M45 15 L45 25 M57 15 L57 25 M69 15 L69 25 M81 15 L81 25 M93 15 L93 25 M105 15 L105 25" stroke="#fff" stroke-opacity="0.6" stroke-width="3"/>'
+    + '<path d="M45 95 L45 105 M57 95 L57 105 M69 95 L69 105 M81 95 L81 105 M93 95 L93 105 M105 95 L105 105" stroke="#fff" stroke-opacity="0.6" stroke-width="3"/>'
+    + '<path d="M35 35 L45 35 M35 47 L45 47 M35 59 L45 59 M35 71 L45 71 M35 83 L45 83" stroke="#fff" stroke-opacity="0.6" stroke-width="3"/>'
+    + '<path d="M115 35 L125 35 M115 47 L125 47 M115 59 L125 59 M115 71 L125 71 M115 83 L125 83" stroke="#fff" stroke-opacity="0.6" stroke-width="3"/>'
+    + '<rect x="45" y="25" width="70" height="70" rx="6" fill="#fff" opacity="0.95"/>'
+    + '<path d="M45 25 L54 25 L45 34 Z" fill="#000" opacity="0.25"/>'
+    + '<rect x="58" y="38" width="44" height="44" rx="2" fill="#000" opacity="0.16"/>'
+    + '<path d="M58 50 h44 M58 60 h44 M58 70 h44 M70 38 v44 M90 38 v44" stroke="#fff" stroke-opacity="0.3" stroke-width="1.5"/>'
+    + '</svg>',
+  memory: '<svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="20" y="26" width="120" height="52" rx="5" fill="#fff" opacity="0.95"/>'
+    + '<rect x="32" y="36" width="16" height="24" rx="2" fill="#000" opacity="0.18"/>'
+    + '<rect x="56" y="36" width="16" height="24" rx="2" fill="#000" opacity="0.18"/>'
+    + '<rect x="80" y="36" width="16" height="24" rx="2" fill="#000" opacity="0.18"/>'
+    + '<rect x="104" y="36" width="16" height="24" rx="2" fill="#000" opacity="0.18"/>'
+    + '<g fill="#FFDA9E">'
+    + '<rect x="26" y="78" width="4" height="16"/><rect x="34" y="78" width="4" height="16"/><rect x="42" y="78" width="4" height="16"/>'
+    + '<rect x="50" y="78" width="4" height="16"/><rect x="58" y="78" width="4" height="16"/><rect x="66" y="78" width="4" height="16"/>'
+    + '<rect x="74" y="78" width="4" height="16"/><rect x="82" y="78" width="4" height="16"/><rect x="90" y="78" width="4" height="16"/>'
+    + '<rect x="98" y="78" width="4" height="16"/><rect x="106" y="78" width="4" height="16"/><rect x="114" y="78" width="4" height="16"/>'
+    + '<rect x="122" y="78" width="4" height="16"/><rect x="130" y="78" width="4" height="16"/>'
+    + '</g>'
+    + '</svg>',
+  other: '<svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="22" y="22" width="46" height="46" rx="10" fill="#fff" opacity="0.95"/>'
+    + '<circle cx="115" cy="45" r="24" fill="#fff" opacity="0.8"/>'
+    + '<rect x="22" y="76" width="46" height="22" rx="7" fill="#fff" opacity="0.55"/>'
+    + '<path d="M96 76 L136 76 L126 98 L106 98 Z" fill="#fff" opacity="0.65"/>'
+    + '</svg>',
+  tablet: '<svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="16" y="17" width="128" height="88" rx="13" fill="#fff" opacity="0.95"/>'
+    + '<rect x="25" y="26" width="70" height="70" rx="3" fill="#000" opacity="0.16"/>'
+    + '<rect x="99" y="26" width="35" height="70" rx="3" fill="#000" opacity="0.12"/>'
+    + '<circle cx="20.5" cy="61" r="1.8" fill="#000" opacity="0.3"/>'
+    + '<line x1="33" y1="38" x2="65" y2="38" stroke="#fff" stroke-opacity="0.5" stroke-width="2"/>'
+    + '<line x1="33" y1="48" x2="55" y2="48" stroke="#fff" stroke-opacity="0.35" stroke-width="2"/>'
+    + '<line x1="33" y1="58" x2="61" y2="58" stroke="#fff" stroke-opacity="0.25" stroke-width="2"/>'
+    + '</svg>',
+  monitor: '<svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="25" y="14" width="110" height="68" rx="6" fill="#fff" opacity="0.95"/>'
+    + '<rect x="33" y="21" width="94" height="54" rx="2" fill="#000" opacity="0.18"/>'
+    + '<line x1="41" y1="32" x2="95" y2="32" stroke="#fff" stroke-opacity="0.5" stroke-width="2"/>'
+    + '<line x1="41" y1="43" x2="80" y2="43" stroke="#fff" stroke-opacity="0.35" stroke-width="2"/>'
+    + '<line x1="41" y1="54" x2="88" y2="54" stroke="#fff" stroke-opacity="0.25" stroke-width="2"/>'
+    + '<rect x="72" y="82" width="16" height="16" fill="#fff" opacity="0.85"/>'
+    + '<rect x="52" y="98" width="56" height="6" rx="3" fill="#fff" opacity="0.85"/>'
+    + '</svg>',
+  tv: '<svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<rect x="15" y="12" width="130" height="76" rx="4" fill="#fff" opacity="0.95"/>'
+    + '<rect x="21" y="18" width="118" height="64" rx="2" fill="#000" opacity="0.18"/>'
+    + '<circle cx="80" cy="50" r="18" fill="#fff" opacity="0.14"/>'
+    + '<path d="M74 40 L92 50 L74 60 Z" fill="#fff" opacity="0.4"/>'
+    + '<rect x="35" y="94" width="14" height="6" rx="2" fill="#fff" opacity="0.8"/>'
+    + '<rect x="111" y="94" width="14" height="6" rx="2" fill="#fff" opacity="0.8"/>'
+    + '</svg>',
+  console: '<svg viewBox="0 0 160 120" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    + '<path d="M50 40 Q40 40 36 52 L28 76 Q24 88 34 92 Q44 96 50 84 L58 72 L102 72 L110 84 Q116 96 126 92 Q136 88 132 76 L124 52 Q120 40 110 40 Z" fill="#fff" opacity="0.95"/>'
+    + '<line x1="46" y1="62" x2="58" y2="62" stroke="#000" stroke-opacity="0.3" stroke-width="3"/>'
+    + '<line x1="52" y1="56" x2="52" y2="68" stroke="#000" stroke-opacity="0.3" stroke-width="3"/>'
+    + '<circle cx="108" cy="56" r="4" fill="#000" opacity="0.25"/>'
+    + '<circle cx="118" cy="62" r="4" fill="#000" opacity="0.25"/>'
+    + '<circle cx="108" cy="68" r="4" fill="#000" opacity="0.25"/>'
+    + '<circle cx="98" cy="62" r="4" fill="#000" opacity="0.25"/>'
+    + '</svg>'
+};
+
+const PRODUCTS = [
+  { id:"s26-ultra", name:"Galaxy S26 Ultra", brand:"Samsung", cat:"phone", date:"2026-03-11", price:1299, status:"confirmed",
+    summary:"Samsung's early-2026 flagship, announced Feb 25 and on sale from March 11, anchoring the year's first big Android launch window.",
+    ratings:{ quality:9, durability:8, value:6, specs:9 },
+    specs:{ "Display":"6.9in LTPO AMOLED, 120Hz", "Chip":"Snapdragon 8 Elite Gen 2 (region-dependent)", "RAM/Storage":"12GB / up to 1TB", "Camera":"200MP main + telephoto array", "Battery":"5,000mAh", "OS":"Android 16, One UI 8", "Charging":"45W wired / 15W wireless", "Water resistance":"IP68" } },
+  { id:"z-trifold", name:"Galaxy Z TriFold", brand:"Samsung", cat:"phone", date:"2026-04-01", price:2399, status:"confirmed",
+    summary:"Samsung's first tri-fold, opening to a 10-inch tablet-style display with a multi-hinge design for running several apps at once.",
+    ratings:{ quality:8, durability:6, value:4, specs:9 },
+    specs:{ "Unfolded display":"~10in foldable panel", "Hinge":"Dual multi-hinge mechanism", "Form factor":"Tri-fold, phone-to-tablet", "Chip":"Snapdragon 8 Elite Gen 2", "OS":"Android 16, One UI 8", "Cover display":"~6.5in outer panel", "Weight":"~299g" } },
+  { id:"nova-16-ultra", name:"Nova 16 Ultra", brand:"Huawei", cat:"phone", date:"2026-06-01", price:899, status:"confirmed",
+    summary:"Top of Huawei's Nova 16 lineup, launched June 1 with a large high-refresh OLED panel and a new in-house cooling system.",
+    ratings:{ quality:8, durability:7, value:8, specs:8 },
+    specs:{ "Display":"6.84in LTPO OLED, 6,000 nits peak", "Chip":"Kirin 9010S, 4nm", "Cooling":"Ice Bridge vapor chamber", "OS":"HarmonyOS 5", "Battery":"5,500mAh, 100W wired", "Water resistance":"IP68" } },
+  { id:"tecno-atom", name:"Atom", brand:"Tecno", cat:"phone", date:"2026-03-01", price:799, status:"unconfirmed",
+    summary:"Unveiled at MWC 2026, an ultra-slim 4.6-4.9mm modular phone unlike anything the brand had shipped before.",
+    ratings:{ quality:6, durability:5, value:6, specs:6 },
+    specs:{ "Thickness":"4.6mm-4.9mm", "Design":"Modular components", "Status":"Pricing/specs pending regional rollout", "OS":"Android 16 (expected)", "Battery":"TBA", "Note":"Concept-stage modular design" } },
+  { id:"pixel-11-pro-xl", name:"Pixel 11 Pro XL", brand:"Google", cat:"phone", date:"2026-10-01", price:1099, status:"unconfirmed",
+    summary:"Expected to continue Google's annual fall cadence; early case leaks point to a design close to the Pixel 10 Pro.",
+    ratings:{ quality:7, durability:7, value:6, specs:7 },
+    specs:{ "Chip":"Tensor G6 (expected)", "Launch window":"Fall 2026 (expected)", "Status":"Specs unconfirmed", "OS":"Android 17 (expected)", "Camera":"50MP main (expected carryover)", "AI features":"Gemini-powered Pixel features (expected)" } },
+  { id:"iphone-18", name:"iPhone 18 lineup", brand:"Apple", cat:"phone", date:"2026-09-01", price:999, status:"unconfirmed",
+    summary:"Apple's fall flagship refresh, expected to anchor the second half of the 2026 phone calendar as usual.",
+    ratings:{ quality:8, durability:8, value:6, specs:7 },
+    specs:{ "Launch window":"September 2026 (expected)", "Status":"Full specs not yet official", "OS":"iOS 20 (expected)", "Chip":"A20 (expected)", "Port":"USB-C" } },
+  { id:"iphone-17", name:"iPhone 17", brand:"Apple", cat:"phone", date:"2025-09-19", price:799, status:"confirmed",
+    summary:"Apple's 2025 mainline flagship: a 6.3-inch OLED, the A19 chip, and an Apple-designed N1 chip combining Wi-Fi 7 and Bluetooth 6.",
+    ratings:{ quality:9, durability:9, value:8, specs:8 },
+    specs:{ "Display":"6.3in OLED, 120Hz ProMotion", "Chip":"A19", "Camera":"48MP + 48MP dual (up to 8x zoom)", "Battery":"3,692mAh", "Port":"USB-C", "OS":"iOS 19", "Water resistance":"IP68", "Charging":"MagSafe up to 25W" } },
+  { id:"iphone-16", name:"iPhone 16", brand:"Apple", cat:"phone", date:"2024-09-20", price:799, status:"confirmed",
+    summary:"Introduced the Camera Control button and the A18 chip, with Apple Intelligence rolling out via software update.",
+    ratings:{ quality:8, durability:8, value:8, specs:7 },
+    specs:{ "Display":"6.1in OLED, 60Hz", "Chip":"A18", "Camera":"48MP + 12MP dual", "New feature":"Camera Control button", "Port":"USB-C", "OS":"iOS 18", "Water resistance":"IP68", "Charging":"MagSafe up to 25W" } },
+  { id:"iphone-15", name:"iPhone 15", brand:"Apple", cat:"phone", date:"2023-09-22", price:799, status:"confirmed",
+    summary:"First mainline iPhone with USB-C, replacing Lightning, and brought Dynamic Island down from the Pro line.",
+    ratings:{ quality:8, durability:8, value:7, specs:6 },
+    specs:{ "Display":"6.1in OLED with Dynamic Island", "Chip":"A16 Bionic", "Camera":"48MP main sensor", "Port":"USB-C (first mainline switch)", "OS":"iOS 17 (launch)", "Water resistance":"IP68", "Frame":"Aluminum" } },
+  { id:"iphone-14", name:"iPhone 14", brand:"Apple", cat:"phone", date:"2022-09-16", price:799, status:"confirmed",
+    summary:"Added Crash Detection and satellite Emergency SOS, still on Lightning and a notch display.",
+    ratings:{ quality:7, durability:8, value:7, specs:5 },
+    specs:{ "Display":"6.1in OLED with notch", "Chip":"A15 Bionic", "New feature":"Crash Detection, satellite SOS", "Port":"Lightning", "OS":"iOS 16 (launch)", "Water resistance":"IP68", "Weight":"172g" } },
+  { id:"iphone-13", name:"iPhone 13", brand:"Apple", cat:"phone", date:"2021-09-24", price:799, status:"confirmed",
+    summary:"Shrunk the notch, added Cinematic mode for video, and kept the A15 Bionic chip shared across the lineup.",
+    ratings:{ quality:7, durability:7, value:8, specs:5 },
+    specs:{ "Display":"6.1in OLED, 60Hz", "Chip":"A15 Bionic", "New feature":"Cinematic mode video", "Port":"Lightning", "OS":"iOS 15 (launch)", "Water resistance":"IP68", "Weight":"174g" } },
+  { id:"iphone-17-pro", name:"iPhone 17 Pro", brand:"Apple", cat:"phone", date:"2025-09-19", price:1099, status:"confirmed",
+    summary:"A redesigned heat-forged aluminum unibody with a big vapor chamber, plus a triple 48MP camera system.",
+    ratings:{ quality:9, durability:9, value:7, specs:9 },
+    specs:{ "Display":"6.3in OLED, 120Hz ProMotion", "Chip":"A19 Pro", "Camera":"48MP main + 48MP ultrawide + 48MP telephoto", "New feature":"Vapor chamber cooling, N1 wireless chip", "Port":"USB-C", "OS":"iOS 19", "Water resistance":"IP68" } },
+  { id:"iphone-17-pro-max", name:"iPhone 17 Pro Max", brand:"Apple", cat:"phone", date:"2025-09-19", price:1199, status:"confirmed",
+    summary:"The largest, longest-battery-life iPhone yet, sharing the Pro's redesigned aluminum unibody and camera system.",
+    ratings:{ quality:9, durability:9, value:7, specs:9 },
+    specs:{ "Display":"6.9in OLED, 120Hz ProMotion", "Chip":"A19 Pro", "Camera":"48MP main + 48MP ultrawide + 48MP telephoto", "New feature":"Largest battery in an iPhone", "Port":"USB-C", "OS":"iOS 19", "Water resistance":"IP68" } },
+  { id:"iphone-16-pro-max", name:"iPhone 16 Pro Max", brand:"Apple", cat:"phone", date:"2024-09-20", price:1199, status:"confirmed",
+    summary:"The biggest iPhone display ever at launch, with the A18 Pro and a 5x tetraprism telephoto lens.",
+    ratings:{ quality:9, durability:9, value:7, specs:9 },
+    specs:{ "Display":"6.9in OLED, 120Hz ProMotion", "Chip":"A18 Pro", "Camera":"48MP main + 5x tetraprism telephoto", "New feature":"Camera Control button, Apple Intelligence", "Port":"USB-C", "OS":"iOS 18", "Water resistance":"IP68" } },
+  { id:"iphone-16-pro", name:"iPhone 16 Pro", brand:"Apple", cat:"phone", date:"2024-09-20", price:999, status:"confirmed",
+    summary:"Grew the Pro display to 6.3 inches and brought the tetraprism zoom lens down from the Pro Max.",
+    ratings:{ quality:9, durability:9, value:7, specs:8 },
+    specs:{ "Display":"6.3in OLED, 120Hz ProMotion", "Chip":"A18 Pro", "Camera":"48MP main + 5x tetraprism telephoto", "New feature":"Camera Control button, Apple Intelligence", "Port":"USB-C", "OS":"iOS 18", "Water resistance":"IP68" } },
+  { id:"iphone-16-plus", name:"iPhone 16 Plus", brand:"Apple", cat:"phone", date:"2024-09-20", price:899, status:"confirmed",
+    summary:"The large-screen mainline iPhone, sharing the 16's A18 chip and Camera Control button.",
+    ratings:{ quality:8, durability:8, value:7, specs:7 },
+    specs:{ "Display":"6.7in OLED, 60Hz", "Chip":"A18", "Camera":"48MP + 12MP dual", "New feature":"Camera Control button", "Port":"USB-C", "OS":"iOS 18", "Water resistance":"IP68" } },
+  { id:"iphone-15-pro-max", name:"iPhone 15 Pro Max", brand:"Apple", cat:"phone", date:"2023-09-22", price:1199, status:"confirmed",
+    summary:"Introduced a 5x periscope telephoto lens exclusive to the Max model, alongside the titanium frame.",
+    ratings:{ quality:9, durability:9, value:7, specs:9 },
+    specs:{ "Display":"6.7in OLED, 120Hz ProMotion", "Chip":"A17 Pro", "Camera":"48MP main + 5x periscope telephoto", "Frame":"Titanium", "Port":"USB-C", "OS":"iOS 17", "Water resistance":"IP68" } },
+  { id:"iphone-15-pro", name:"iPhone 15 Pro", brand:"Apple", cat:"phone", date:"2023-09-22", price:999, status:"confirmed",
+    summary:"First iPhone with a titanium frame and the 3nm A17 Pro chip, plus a customizable Action Button.",
+    ratings:{ quality:9, durability:9, value:7, specs:8 },
+    specs:{ "Display":"6.1in OLED, 120Hz ProMotion", "Chip":"A17 Pro", "Camera":"48MP main + 3x telephoto", "New feature":"Action Button", "Frame":"Titanium", "Port":"USB-C", "OS":"iOS 17" } },
+  { id:"iphone-15-plus", name:"iPhone 15 Plus", brand:"Apple", cat:"phone", date:"2023-09-22", price:899, status:"confirmed",
+    summary:"Brought Dynamic Island and the 48MP main camera down to the large-screen mainline model.",
+    ratings:{ quality:8, durability:8, value:7, specs:7 },
+    specs:{ "Display":"6.7in OLED with Dynamic Island", "Chip":"A16 Bionic", "Camera":"48MP main sensor", "Port":"USB-C", "OS":"iOS 17", "Water resistance":"IP68" } },
+  { id:"iphone-14-pro-max", name:"iPhone 14 Pro Max", brand:"Apple", cat:"phone", date:"2022-09-16", price:1099, status:"confirmed",
+    summary:"Debuted Dynamic Island and the Always-On display alongside a new 48MP main camera sensor.",
+    ratings:{ quality:9, durability:8, value:7, specs:8 },
+    specs:{ "Display":"6.7in OLED, 120Hz ProMotion, Always-On", "Chip":"A16 Bionic", "Camera":"48MP main sensor", "New feature":"Dynamic Island", "Port":"Lightning", "OS":"iOS 16" } },
+  { id:"iphone-14-pro", name:"iPhone 14 Pro", brand:"Apple", cat:"phone", date:"2022-09-16", price:999, status:"confirmed",
+    summary:"Replaced the notch with Dynamic Island and jumped to a 48MP main camera for the first time.",
+    ratings:{ quality:9, durability:8, value:7, specs:8 },
+    specs:{ "Display":"6.1in OLED, 120Hz ProMotion, Always-On", "Chip":"A16 Bionic", "Camera":"48MP main sensor", "New feature":"Dynamic Island", "Port":"Lightning", "OS":"iOS 16" } },
+  { id:"iphone-14-plus", name:"iPhone 14 Plus", brand:"Apple", cat:"phone", date:"2022-10-07", price:899, status:"confirmed",
+    summary:"Brought the large 6.7-inch display to the mainline tier for the first time, without a Pro price tag.",
+    ratings:{ quality:8, durability:8, value:7, specs:6 },
+    specs:{ "Display":"6.7in OLED, 60Hz", "Chip":"A15 Bionic", "Camera":"12MP + 12MP dual", "New feature":"Crash Detection, satellite SOS", "Port":"Lightning", "OS":"iOS 16" } },
+  { id:"iphone-13-pro-max", name:"iPhone 13 Pro Max", brand:"Apple", cat:"phone", date:"2021-09-24", price:1099, status:"confirmed",
+    summary:"Paired the first 120Hz ProMotion display on an iPhone with the best battery life of the lineup.",
+    ratings:{ quality:9, durability:8, value:7, specs:7 },
+    specs:{ "Display":"6.7in OLED, 120Hz ProMotion", "Chip":"A15 Bionic", "Camera":"12MP triple + macro", "New feature":"3x telephoto, macro photography", "Port":"Lightning", "OS":"iOS 15" } },
+  { id:"iphone-13-pro", name:"iPhone 13 Pro", brand:"Apple", cat:"phone", date:"2021-09-24", price:999, status:"confirmed",
+    summary:"Introduced ProMotion's 120Hz adaptive refresh rate to iPhone for the first time.",
+    ratings:{ quality:9, durability:8, value:7, specs:7 },
+    specs:{ "Display":"6.1in OLED, 120Hz ProMotion", "Chip":"A15 Bionic", "Camera":"12MP triple + macro", "New feature":"3x telephoto, macro photography", "Port":"Lightning", "OS":"iOS 15" } },
+  { id:"iphone-13-mini", name:"iPhone 13 mini", brand:"Apple", cat:"phone", date:"2021-09-24", price:699, status:"confirmed",
+    summary:"The smallest flagship-spec iPhone Apple ever shipped, squeezing the A15 Bionic into a 5.4-inch body.",
+    ratings:{ quality:8, durability:7, value:7, specs:6 },
+    specs:{ "Display":"5.4in OLED, 60Hz", "Chip":"A15 Bionic", "Camera":"12MP dual, diagonal layout", "Port":"Lightning", "OS":"iOS 15", "Water resistance":"IP68" } },
+  { id:"iphone-12-pro-max", name:"iPhone 12 Pro Max", brand:"Apple", cat:"phone", date:"2020-11-13", price:1099, status:"confirmed",
+    summary:"The largest iPhone at the time, and the first with sensor-shift optical image stabilization.",
+    ratings:{ quality:8, durability:8, value:7, specs:7 },
+    specs:{ "Display":"6.7in OLED, 60Hz", "Chip":"A14 Bionic", "Camera":"12MP triple + LiDAR", "New feature":"Sensor-shift stabilization", "Port":"Lightning", "OS":"iOS 14" } },
+  { id:"iphone-12-pro", name:"iPhone 12 Pro", brand:"Apple", cat:"phone", date:"2020-10-23", price:999, status:"confirmed",
+    summary:"Added a LiDAR scanner for the first time, enabling faster autofocus and ProRAW photography.",
+    ratings:{ quality:8, durability:7, value:7, specs:7 },
+    specs:{ "Display":"6.1in OLED, 60Hz", "Chip":"A14 Bionic", "Camera":"12MP triple + LiDAR", "New feature":"LiDAR scanner, ProRAW", "Port":"Lightning", "OS":"iOS 14" } },
+  { id:"iphone-12", name:"iPhone 12", brand:"Apple", cat:"phone", date:"2020-10-23", price:799, status:"confirmed",
+    summary:"Introduced 5G and MagSafe to the mainline iPhone, along with a flat-edge design and Ceramic Shield front.",
+    ratings:{ quality:8, durability:8, value:7, specs:6 },
+    specs:{ "Display":"6.1in OLED, 60Hz", "Chip":"A14 Bionic", "Camera":"12MP dual", "New feature":"5G, MagSafe, Ceramic Shield", "Port":"Lightning", "OS":"iOS 14" } },
+  { id:"iphone-12-mini", name:"iPhone 12 mini", brand:"Apple", cat:"phone", date:"2020-11-13", price:699, status:"confirmed",
+    summary:"A full flagship experience shrunk into a 5.4-inch body, the smallest 5G phone at the time.",
+    ratings:{ quality:8, durability:7, value:7, specs:6 },
+    specs:{ "Display":"5.4in OLED, 60Hz", "Chip":"A14 Bionic", "Camera":"12MP dual", "New feature":"5G, MagSafe", "Port":"Lightning", "OS":"iOS 14" } },
+  { id:"iphone-11-pro-max", name:"iPhone 11 Pro Max", brand:"Apple", cat:"phone", date:"2019-09-20", price:1099, status:"confirmed",
+    summary:"Apple's first triple-camera iPhone at its largest size, with the best battery life of its generation.",
+    ratings:{ quality:8, durability:7, value:7, specs:6 },
+    specs:{ "Display":"6.5in Super Retina XDR OLED", "Chip":"A13 Bionic", "Camera":"12MP triple (wide/ultrawide/telephoto)", "New feature":"Night mode", "Port":"Lightning", "OS":"iOS 13" } },
+  { id:"iphone-11-pro", name:"iPhone 11 Pro", brand:"Apple", cat:"phone", date:"2019-09-20", price:999, status:"confirmed",
+    summary:"Introduced the 'Pro' name and a matte glass back alongside Apple's first triple-camera system.",
+    ratings:{ quality:8, durability:7, value:7, specs:6 },
+    specs:{ "Display":"5.8in Super Retina XDR OLED", "Chip":"A13 Bionic", "Camera":"12MP triple (wide/ultrawide/telephoto)", "New feature":"Night mode", "Port":"Lightning", "OS":"iOS 13" } },
+  { id:"iphone-11", name:"iPhone 11", brand:"Apple", cat:"phone", date:"2019-09-20", price:699, status:"confirmed",
+    summary:"Brought a dual-camera ultrawide setup to the mainline iPhone for the first time, at a lower price than its predecessor.",
+    ratings:{ quality:8, durability:8, value:8, specs:6 },
+    specs:{ "Display":"6.1in Liquid Retina LCD", "Chip":"A13 Bionic", "Camera":"12MP dual (wide/ultrawide)", "New feature":"Night mode", "Port":"Lightning", "OS":"iOS 13" } },
+  { id:"iphone-xs-max", name:"iPhone XS Max", brand:"Apple", cat:"phone", date:"2018-09-21", price:1099, status:"confirmed",
+    summary:"The largest iPhone display at the time, sharing the XS's Face ID design and A12 Bionic chip.",
+    ratings:{ quality:7, durability:7, value:6, specs:5 },
+    specs:{ "Display":"6.5in Super Retina OLED", "Chip":"A12 Bionic", "Camera":"12MP dual", "Port":"Lightning", "OS":"iOS 12", "Water resistance":"IP68" } },
+  { id:"iphone-xs", name:"iPhone XS", brand:"Apple", cat:"phone", date:"2018-09-21", price:999, status:"confirmed",
+    summary:"A refined follow-up to the iPhone X, with the A12 Bionic chip and improved water resistance.",
+    ratings:{ quality:7, durability:7, value:6, specs:5 },
+    specs:{ "Display":"5.8in Super Retina OLED", "Chip":"A12 Bionic", "Camera":"12MP dual", "Port":"Lightning", "OS":"iOS 12", "Water resistance":"IP68" } },
+  { id:"iphone-xr", name:"iPhone XR", brand:"Apple", cat:"phone", date:"2018-10-26", price:749, status:"confirmed",
+    summary:"Brought Face ID and edge-to-edge design to a cheaper LCD model, in six bright colors.",
+    ratings:{ quality:7, durability:7, value:8, specs:5 },
+    specs:{ "Display":"6.1in Liquid Retina LCD", "Chip":"A12 Bionic", "Camera":"12MP single with Portrait mode", "Port":"Lightning", "OS":"iOS 12", "Water resistance":"IP67" } },
+  { id:"iphone-x", name:"iPhone X", brand:"Apple", cat:"phone", date:"2017-11-03", price:999, status:"confirmed",
+    summary:"Introduced Face ID and an edge-to-edge OLED display, removing the Home button for the first time.",
+    ratings:{ quality:8, durability:6, value:6, specs:5 },
+    specs:{ "Display":"5.8in Super Retina OLED", "Chip":"A11 Bionic", "Camera":"12MP dual", "New feature":"Face ID, no Home button", "Port":"Lightning", "OS":"iOS 11" } },
+  { id:"iphone-8-plus", name:"iPhone 8 Plus", brand:"Apple", cat:"phone", date:"2017-09-22", price:799, status:"confirmed",
+    summary:"Added Portrait Lighting effects to the dual-camera system, alongside the glass back and wireless charging.",
+    ratings:{ quality:7, durability:8, value:7, specs:4 },
+    specs:{ "Display":"5.5in Retina HD LCD", "Chip":"A11 Bionic", "Camera":"12MP dual, Portrait Lighting", "New feature":"Wireless charging", "Port":"Lightning", "OS":"iOS 11" } },
+  { id:"iphone-8", name:"iPhone 8", brand:"Apple", cat:"phone", date:"2017-09-22", price:699, status:"confirmed",
+    summary:"Switched to a glass back to enable Qi wireless charging, Apple's first iPhone to support it.",
+    ratings:{ quality:7, durability:7, value:7, specs:4 },
+    specs:{ "Display":"4.7in Retina HD LCD", "Chip":"A11 Bionic", "Camera":"12MP single", "New feature":"Wireless charging", "Port":"Lightning", "OS":"iOS 11" } },
+  { id:"iphone-7-plus", name:"iPhone 7 Plus", brand:"Apple", cat:"phone", date:"2016-09-16", price:769, status:"confirmed",
+    summary:"Apple's first dual-camera iPhone, introducing Portrait mode depth-of-field effects.",
+    ratings:{ quality:7, durability:8, value:7, specs:3 },
+    specs:{ "Display":"5.5in Retina HD LCD", "Chip":"A10 Fusion", "Camera":"12MP dual, Portrait mode", "New feature":"Dual camera", "Port":"Lightning", "OS":"iOS 10" } },
+  { id:"iphone-7", name:"iPhone 7", brand:"Apple", cat:"phone", date:"2016-09-16", price:649, status:"confirmed",
+    summary:"Removed the headphone jack for the first time and added the first water resistance rating to iPhone.",
+    ratings:{ quality:7, durability:8, value:8, specs:3 },
+    specs:{ "Display":"4.7in Retina HD LCD", "Chip":"A10 Fusion", "Camera":"12MP single, optical stabilization", "New feature":"No headphone jack, IP67", "Port":"Lightning", "OS":"iOS 10" } },
+  { id:"s25-ultra", name:"Galaxy S25 Ultra", brand:"Samsung", cat:"phone", date:"2025-02-07", price:1299, status:"confirmed",
+    summary:"Refined the titanium Ultra design with a fully custom Snapdragon 8 Elite for Galaxy and deeper Galaxy AI integration.",
+    ratings:{ quality:9, durability:8, value:7, specs:9 },
+    specs:{ "Display":"6.9in QHD+ AMOLED, 120Hz", "Chip":"Snapdragon 8 Elite for Galaxy", "Camera":"200MP main", "Frame":"Titanium", "OS":"Android 15, One UI 7", "Charging":"45W wired", "Water resistance":"IP68" } },
+  { id:"s24-ultra", name:"Galaxy S24 Ultra", brand:"Samsung", cat:"phone", date:"2024-01-31", price:1299, status:"confirmed",
+    summary:"Samsung's first titanium-framed Ultra, and the launch device for Galaxy AI features like Circle to Search.",
+    ratings:{ quality:8, durability:8, value:7, specs:8 },
+    specs:{ "Display":"6.8in QHD+ AMOLED, 120Hz", "Chip":"Snapdragon 8 Gen 3 for Galaxy", "Camera":"200MP main", "New feature":"Galaxy AI (Circle to Search)", "OS":"Android 14, One UI 6.1", "Charging":"45W wired", "Water resistance":"IP68" } },
+  { id:"s23-ultra", name:"Galaxy S23 Ultra", brand:"Samsung", cat:"phone", date:"2023-02-17", price:1199, status:"confirmed",
+    summary:"Standardized a fully custom Snapdragon 8 Gen 2 across all global markets, with a built-in S Pen.",
+    ratings:{ quality:8, durability:8, value:8, specs:7 },
+    specs:{ "Display":"6.8in QHD+ AMOLED, 120Hz", "Chip":"Snapdragon 8 Gen 2 for Galaxy (global)", "Camera":"200MP main (first Ultra at this res)", "S Pen":"Built-in silo", "OS":"Android 13, One UI 5.1", "Charging":"45W wired", "Water resistance":"IP68" } },
+  { id:"s22-ultra", name:"Galaxy S22 Ultra", brand:"Samsung", cat:"phone", date:"2022-02-25", price:1199, status:"confirmed",
+    summary:"Merged Samsung's Note line into the S series, bringing the S Pen to an Ultra model for the first time.",
+    ratings:{ quality:7, durability:7, value:7, specs:6 },
+    specs:{ "Display":"6.8in QHD+ AMOLED, 120Hz", "Chip":"Snapdragon 8 Gen 1 / Exynos 2200 (region)", "Camera":"108MP main", "New feature":"S Pen merges Note lineage", "OS":"Android 12, One UI 4.1", "Charging":"45W wired", "Water resistance":"IP68" } },
+  { id:"oneplus-13", name:"OnePlus 13", brand:"OnePlus", cat:"phone", date:"2025-01-07", price:899, status:"confirmed",
+    summary:"OnePlus's global flagship built around a redesigned camera housing and a jump to Snapdragon 8 Elite silicon.",
+    ratings:{ quality:8, durability:7, value:9, specs:8 },
+    specs:{ "Display":"6.82in LTPO AMOLED, 120Hz", "Chip":"Snapdragon 8 Elite", "RAM/Storage":"Up to 24GB / 1TB", "Camera":"50MP main + Hasselblad tuning", "Battery":"6,000mAh, 100W wired", "OS":"Android 15, OxygenOS 15", "Water resistance":"IP68/IP69" } },
+  { id:"xiaomi-15-ultra", name:"Xiaomi 15 Ultra", brand:"Xiaomi", cat:"phone", date:"2025-02-27", price:1499, status:"confirmed",
+    summary:"Xiaomi's camera-first flagship, co-engineered with Leica and built around a variable-aperture main sensor.",
+    ratings:{ quality:8, durability:7, value:6, specs:9 },
+    specs:{ "Display":"6.73in LTPO AMOLED, 120Hz", "Chip":"Snapdragon 8 Elite", "Camera":"Leica quad-camera, variable aperture", "Battery":"6,000mAh, 90W wired", "OS":"Android 15, HyperOS 2", "Water resistance":"IP68" } },
+  { id:"pixel-10-pro", name:"Pixel 10 Pro", brand:"Google", cat:"phone", date:"2025-08-13", price:999, status:"confirmed",
+    summary:"Google's 2025 flagship, pairing the Tensor G5 with deeper on-device Gemini Nano features.",
+    ratings:{ quality:8, durability:7, value:7, specs:8 },
+    specs:{ "Display":"6.3in LTPO OLED, 120Hz", "Chip":"Tensor G5", "Camera":"50MP main + 5x telephoto", "Battery":"4,870mAh", "OS":"Android 16", "Water resistance":"IP68" } },
+  { id:"pixel-9-pro", name:"Pixel 9 Pro", brand:"Google", cat:"phone", date:"2024-06-01", price:999, status:"confirmed",
+    summary:"Introduced the boxier Pixel design language and Gemini-branded AI features across the lineup.",
+    ratings:{ quality:7, durability:7, value:7, specs:7 },
+    specs:{ "Display":"6.3in LTPO OLED, 120Hz", "Chip":"Tensor G4", "Camera":"50MP main + 5x telephoto", "Battery":"4,700mAh", "OS":"Android 14", "Water resistance":"IP68" } },
+  { id:"nothing-phone-3", name:"Nothing Phone (3)", brand:"Nothing", cat:"phone", date:"2025-07-01", price:799, status:"confirmed",
+    summary:"Nothing's first true flagship, keeping the transparent Glyph design language while moving upmarket on specs.",
+    ratings:{ quality:7, durability:6, value:8, specs:7 },
+    specs:{ "Display":"6.67in LTPO AMOLED, 120Hz", "Chip":"Snapdragon 8s Gen 4", "Design":"Glyph Matrix rear display", "Battery":"5,150mAh, 65W wired", "OS":"Android 15, Nothing OS 3.5", "Water resistance":"IP68" } },
+
+  { id:"ipad-pro-13-m4", name:"iPad Pro 13-inch (M4)", brand:"Apple", cat:"tablet", date:"2024-05-15", price:1299, status:"confirmed",
+    summary:"Apple's thinnest device ever, built around a tandem OLED display and the M4 chip.",
+    ratings:{ quality:9, durability:9, value:6, specs:9 },
+    specs:{ "Display":"13in tandem OLED, 120Hz ProMotion", "Chip":"Apple M4", "RAM/Storage":"Up to 16GB / 2TB", "Camera":"12MP main + LiDAR", "OS":"iPadOS 17 (launch)", "Weight":"579g (Wi-Fi)" } },
+  { id:"ipad-pro-11-m4", name:"iPad Pro 11-inch (M4)", brand:"Apple", cat:"tablet", date:"2024-05-15", price:999, status:"confirmed",
+    summary:"The smaller M4 iPad Pro, matching the 13-inch model's tandem OLED display and Thunderbolt port.",
+    ratings:{ quality:9, durability:9, value:6, specs:9 },
+    specs:{ "Display":"11in tandem OLED, 120Hz ProMotion", "Chip":"Apple M4", "RAM/Storage":"Up to 16GB / 2TB", "Camera":"12MP main + LiDAR", "OS":"iPadOS 17 (launch)", "Weight":"444g (Wi-Fi)" } },
+  { id:"ipad-pro-129-m2", name:"iPad Pro 12.9-inch (M2)", brand:"Apple", cat:"tablet", date:"2022-10-26", price:1099, status:"confirmed",
+    summary:"Brought the M2 chip and a brighter mini-LED display to the 12.9-inch Pro.",
+    ratings:{ quality:8, durability:9, value:6, specs:8 },
+    specs:{ "Display":"12.9in Liquid Retina XDR, mini-LED", "Chip":"Apple M2", "RAM/Storage":"Up to 16GB / 2TB", "Camera":"12MP main + LiDAR", "OS":"iPadOS 16", "Weight":"682g (Wi-Fi)" } },
+  { id:"ipad-pro-129-m1", name:"iPad Pro 12.9-inch (M1)", brand:"Apple", cat:"tablet", date:"2021-05-21", price:1099, status:"confirmed",
+    summary:"The first iPad Pro with Apple silicon, alongside a mini-LED Liquid Retina XDR display.",
+    ratings:{ quality:8, durability:8, value:7, specs:7 },
+    specs:{ "Display":"12.9in Liquid Retina XDR, mini-LED", "Chip":"Apple M1", "RAM/Storage":"Up to 16GB / 2TB", "Camera":"12MP main + LiDAR", "OS":"iPadOS 14.5", "Weight":"682g (Wi-Fi)" } },
+  { id:"ipad-pro-129-4th", name:"iPad Pro 12.9-inch (4th gen)", brand:"Apple", cat:"tablet", date:"2020-03-25", price:999, status:"confirmed",
+    summary:"Added a LiDAR scanner and trackpad support via the Magic Keyboard for the first time.",
+    ratings:{ quality:8, durability:8, value:7, specs:6 },
+    specs:{ "Display":"12.9in Liquid Retina LCD, 120Hz", "Chip":"Apple A12Z Bionic", "RAM/Storage":"6GB / up to 1TB", "Camera":"12MP + 10MP ultrawide + LiDAR", "OS":"iPadOS 13.4", "Weight":"643g (Wi-Fi)" } },
+  { id:"ipad-pro-11-1st", name:"iPad Pro 11-inch (1st gen)", brand:"Apple", cat:"tablet", date:"2018-11-07", price:799, status:"confirmed",
+    summary:"Replaced the Home button with Face ID and thinned the bezels on the first 11-inch Pro.",
+    ratings:{ quality:7, durability:7, value:7, specs:5 },
+    specs:{ "Display":"11in Liquid Retina LCD, 120Hz", "Chip":"Apple A12X Bionic", "RAM/Storage":"4GB / up to 1TB", "Camera":"12MP main", "OS":"iOS 12.1", "Weight":"468g (Wi-Fi)" } },
+  { id:"ipad-air-13-m2", name:"iPad Air 13-inch (M2)", brand:"Apple", cat:"tablet", date:"2024-05-15", price:799, status:"confirmed",
+    summary:"The first large-screen Air, giving the mid-range line a 13-inch option alongside the M2 chip.",
+    ratings:{ quality:8, durability:8, value:7, specs:7 },
+    specs:{ "Display":"13in Liquid Retina LCD", "Chip":"Apple M2", "RAM/Storage":"Up to 8GB / 1TB", "Camera":"12MP main", "OS":"iPadOS 17.5", "Weight":"617g (Wi-Fi)" } },
+  { id:"ipad-air-11-m2", name:"iPad Air 11-inch (M2)", brand:"Apple", cat:"tablet", date:"2024-05-15", price:599, status:"confirmed",
+    summary:"The standard-size Air moved to the M2 chip, closing much of the performance gap with the Pro.",
+    ratings:{ quality:8, durability:8, value:8, specs:7 },
+    specs:{ "Display":"11in Liquid Retina LCD", "Chip":"Apple M2", "RAM/Storage":"Up to 8GB / 1TB", "Camera":"12MP main", "OS":"iPadOS 17.5", "Weight":"462g (Wi-Fi)" } },
+  { id:"ipad-air-5th", name:"iPad Air (5th gen, M1)", brand:"Apple", cat:"tablet", date:"2022-03-18", price:599, status:"confirmed",
+    summary:"Brought the M1 chip down from the Pro line, plus 5G and a Center Stage front camera.",
+    ratings:{ quality:8, durability:8, value:8, specs:7 },
+    specs:{ "Display":"10.9in Liquid Retina LCD", "Chip":"Apple M1", "RAM/Storage":"8GB / up to 256GB", "Camera":"12MP main + Center Stage front", "OS":"iPadOS 15.4", "Weight":"461g (Wi-Fi)" } },
+  { id:"ipad-air-4th", name:"iPad Air (4th gen)", brand:"Apple", cat:"tablet", date:"2020-10-23", price:599, status:"confirmed",
+    summary:"Redesigned with flat edges and Touch ID moved into the top button, previewing the iPad Pro look.",
+    ratings:{ quality:7, durability:8, value:8, specs:6 },
+    specs:{ "Display":"10.9in Liquid Retina LCD", "Chip":"Apple A14 Bionic", "RAM/Storage":"4GB / up to 256GB", "Camera":"12MP main", "OS":"iPadOS 14", "Weight":"458g (Wi-Fi)" } },
+  { id:"ipad-air-3rd", name:"iPad Air (3rd gen)", brand:"Apple", cat:"tablet", date:"2019-03-18", price:499, status:"confirmed",
+    summary:"Revived the Air name with a larger 10.5-inch display and Apple Pencil (1st gen) support.",
+    ratings:{ quality:7, durability:7, value:8, specs:5 },
+    specs:{ "Display":"10.5in Retina LCD", "Chip":"Apple A12 Bionic", "RAM/Storage":"3GB / up to 256GB", "Camera":"8MP main", "OS":"iOS 12.2", "Weight":"456g (Wi-Fi)" } },
+  { id:"ipad-mini-7th", name:"iPad mini (7th gen)", brand:"Apple", cat:"tablet", date:"2024-10-23", price:499, status:"confirmed",
+    summary:"Jumped straight to the A17 Pro chip, adding hardware ray tracing to the smallest iPad.",
+    ratings:{ quality:8, durability:8, value:7, specs:7 },
+    specs:{ "Display":"8.3in Liquid Retina LCD", "Chip":"Apple A17 Pro", "RAM/Storage":"8GB / up to 512GB", "Camera":"12MP main", "OS":"iPadOS 18", "Weight":"293g (Wi-Fi)" } },
+  { id:"ipad-mini-6th", name:"iPad mini (6th gen)", brand:"Apple", cat:"tablet", date:"2021-09-24", price:499, status:"confirmed",
+    summary:"A full redesign with flat edges, USB-C, and Apple Pencil (2nd gen) support in a compact body.",
+    ratings:{ quality:8, durability:7, value:7, specs:6 },
+    specs:{ "Display":"8.3in Liquid Retina LCD", "Chip":"Apple A15 Bionic", "RAM/Storage":"4GB / up to 256GB", "Camera":"12MP main", "OS":"iPadOS 15", "Weight":"293g (Wi-Fi)" } },
+  { id:"ipad-mini-5th", name:"iPad mini (5th gen)", brand:"Apple", cat:"tablet", date:"2019-03-18", price:399, status:"confirmed",
+    summary:"Revived the mini line after years without an update, adding Apple Pencil (1st gen) support.",
+    ratings:{ quality:7, durability:7, value:7, specs:4 },
+    specs:{ "Display":"7.9in Retina LCD", "Chip":"Apple A12 Bionic", "RAM/Storage":"3GB / up to 256GB", "Camera":"8MP main", "OS":"iOS 12.2", "Weight":"300g (Wi-Fi)" } },
+  { id:"ipad-10th", name:"iPad (10th gen)", brand:"Apple", cat:"tablet", date:"2022-10-26", price:449, status:"confirmed",
+    summary:"A full redesign for the base iPad, with flat edges, USB-C, and a landscape front camera.",
+    ratings:{ quality:7, durability:7, value:8, specs:6 },
+    specs:{ "Display":"10.9in Liquid Retina LCD", "Chip":"Apple A14 Bionic", "RAM/Storage":"4GB / up to 256GB", "Camera":"12MP main + landscape front", "OS":"iPadOS 16", "Weight":"477g (Wi-Fi)" } },
+  { id:"ipad-9th", name:"iPad (9th gen)", brand:"Apple", cat:"tablet", date:"2021-09-24", price:329, status:"confirmed",
+    summary:"Kept the classic Home-button design but added True Tone and the A13 Bionic chip.",
+    ratings:{ quality:7, durability:8, value:9, specs:5 },
+    specs:{ "Display":"10.2in Retina LCD", "Chip":"Apple A13 Bionic", "RAM/Storage":"3GB / up to 256GB", "Camera":"8MP main", "OS":"iPadOS 15", "Weight":"487g (Wi-Fi)" } },
+  { id:"ipad-8th", name:"iPad (8th gen)", brand:"Apple", cat:"tablet", date:"2020-09-18", price:329, status:"confirmed",
+    summary:"Upgraded the entry-level iPad to the A12 Bionic chip while keeping the familiar Home button.",
+    ratings:{ quality:6, durability:8, value:8, specs:4 },
+    specs:{ "Display":"10.2in Retina LCD", "Chip":"Apple A12 Bionic", "RAM/Storage":"3GB / up to 128GB", "Camera":"8MP main", "OS":"iPadOS 14", "Weight":"490g (Wi-Fi)" } },
+  { id:"galaxy-tab-s10-ultra", name:"Galaxy Tab S10 Ultra", brand:"Samsung", cat:"tablet", date:"2024-09-26", price:1199, status:"confirmed",
+    summary:"Samsung's largest, most powerful tablet, with Galaxy AI features and an S Pen included in the box.",
+    ratings:{ quality:8, durability:7, value:6, specs:8 },
+    specs:{ "Display":"14.6in Dynamic AMOLED 2X, 120Hz", "Chip":"Dimensity 9300+", "RAM/Storage":"12GB / up to 1TB", "Camera":"13MP + 8MP ultrawide", "OS":"Android 14, One UI 6.1", "S Pen":"Included" } },
+  { id:"galaxy-tab-s9-ultra", name:"Galaxy Tab S9 Ultra", brand:"Samsung", cat:"tablet", date:"2023-08-01", price:1199, status:"confirmed",
+    summary:"Samsung's first IP68-rated tablet, built around a massive 14.6-inch AMOLED display.",
+    ratings:{ quality:8, durability:8, value:6, specs:7 },
+    specs:{ "Display":"14.6in Dynamic AMOLED 2X, 120Hz", "Chip":"Snapdragon 8 Gen 2 for Galaxy", "RAM/Storage":"12GB / up to 1TB", "Camera":"13MP + 8MP ultrawide", "OS":"Android 13, One UI 5.1", "Water resistance":"IP68" } },
+  { id:"surface-pro-11", name:"Surface Pro 11", brand:"Microsoft", cat:"tablet", date:"2024-06-18", price:999, status:"confirmed",
+    summary:"Microsoft's first Arm-based Surface Pro, running Snapdragon X as a Copilot+ PC tablet.",
+    ratings:{ quality:7, durability:7, value:7, specs:7 },
+    specs:{ "Display":"13in PixelSense Flow, 120Hz", "Chip":"Snapdragon X Plus / X Elite", "RAM/Storage":"Up to 32GB / 1TB", "OS":"Windows 11 (Copilot+)", "Weight":"895g (without keyboard)", "Kickstand":"Adjustable, up to 120°" } },
+
+  { id:"rtx-5090", name:"GeForce RTX 5090", brand:"Nvidia", cat:"gpu", date:"2025-01-30", price:1999, status:"confirmed",
+    summary:"Nvidia's Blackwell-generation flagship, pairing a large CUDA core count with DLSS 4 multi-frame generation.",
+    ratings:{ quality:9, durability:9, value:5, specs:10 },
+    specs:{ "Architecture":"Blackwell", "VRAM":"32GB GDDR7", "CUDA cores":"~21,760", "DLSS":"DLSS 4, multi frame generation", "TDP":"575W", "Outputs":"3x DP 2.1, 1x HDMI 2.1b", "Bus interface":"PCIe 5.0 x16" } },
+  { id:"rtx-5080", name:"GeForce RTX 5080", brand:"Nvidia", cat:"gpu", date:"2025-01-30", price:999, status:"confirmed",
+    summary:"The step-down Blackwell card, aimed at 4K gaming with a far more reasonable price than the 5090.",
+    ratings:{ quality:9, durability:9, value:7, specs:9 },
+    specs:{ "Architecture":"Blackwell", "VRAM":"16GB GDDR7", "CUDA cores":"~10,752", "DLSS":"DLSS 4, multi frame generation", "TDP":"360W", "Outputs":"3x DP 2.1, 1x HDMI 2.1b", "Bus interface":"PCIe 5.0 x16" } },
+  { id:"rtx-4090", name:"GeForce RTX 4090", brand:"Nvidia", cat:"gpu", date:"2022-10-12", price:1599, status:"confirmed",
+    summary:"The Ada Lovelace flagship that introduced DLSS 3 frame generation and a large leap in ray-tracing performance.",
+    ratings:{ quality:9, durability:9, value:6, specs:8 },
+    specs:{ "Architecture":"Ada Lovelace", "VRAM":"24GB GDDR6X", "CUDA cores":"16,384", "DLSS":"DLSS 3, frame generation", "TDP":"450W", "Outputs":"3x DP 1.4a, 1x HDMI 2.1", "Bus interface":"PCIe 4.0 x16" } },
+  { id:"rtx-3090", name:"GeForce RTX 3090", brand:"Nvidia", cat:"gpu", date:"2020-09-24", price:1499, status:"confirmed",
+    summary:"Ampere's original flagship, positioned as a workstation-class BFGPU with 24GB of VRAM.",
+    ratings:{ quality:8, durability:8, value:6, specs:5 },
+    specs:{ "Architecture":"Ampere", "VRAM":"24GB GDDR6X", "CUDA cores":"10,496", "DLSS":"DLSS 2", "TDP":"350W", "Outputs":"3x DP 1.4a, 1x HDMI 2.1", "Bus interface":"PCIe 4.0 x16" } },
+  { id:"rtx-2080ti", name:"GeForce RTX 2080 Ti", brand:"Nvidia", cat:"gpu", date:"2018-09-27", price:1199, status:"confirmed",
+    summary:"Introduced real-time ray tracing to consumer GPUs with Turing's dedicated RT cores.",
+    ratings:{ quality:7, durability:7, value:6, specs:4 },
+    specs:{ "Architecture":"Turing", "VRAM":"11GB GDDR6", "CUDA cores":"4,352", "Milestone":"First consumer ray-tracing cores", "TDP":"250W", "Outputs":"3x DP 1.4, 1x HDMI 2.0b, 1x USB-C", "Bus interface":"PCIe 3.0 x16" } },
+  { id:"gtx-1080ti", name:"GeForce GTX 1080 Ti", brand:"Nvidia", cat:"gpu", date:"2017-03-10", price:699, status:"confirmed",
+    summary:"The Pascal-era flagship widely seen as one of Nvidia's best price-to-performance halo cards, with no ray tracing hardware.",
+    ratings:{ quality:8, durability:8, value:9, specs:4 },
+    specs:{ "Architecture":"Pascal", "VRAM":"11GB GDDR5X", "CUDA cores":"3,584", "Ray tracing":"None (pre-RT era)", "TDP":"250W", "Outputs":"3x DP 1.4, 1x HDMI 2.0b, 1x DVI", "Bus interface":"PCIe 3.0 x16" } },
+  { id:"rx-9070-xt", name:"Radeon RX 9070 XT", brand:"AMD", cat:"gpu", date:"2025-03-06", price:599, status:"confirmed",
+    summary:"AMD's RDNA 4 flagship, undercutting Nvidia's mid-range while closing much of the ray-tracing gap.",
+    ratings:{ quality:8, durability:8, value:9, specs:8 },
+    specs:{ "Architecture":"RDNA 4", "VRAM":"16GB GDDR6", "Stream processors":"~4,096", "Upscaling":"FSR 4", "TDP":"304W", "Outputs":"2x DP 2.1, 1x HDMI 2.1b", "Bus interface":"PCIe 4.0 x16" } },
+  { id:"rx-7900-xtx", name:"Radeon RX 7900 XTX", brand:"AMD", cat:"gpu", date:"2022-12-13", price:999, status:"confirmed",
+    summary:"AMD's RDNA 3 flagship, notable for its large VRAM pool and chiplet-based GPU design.",
+    ratings:{ quality:8, durability:8, value:7, specs:7 },
+    specs:{ "Architecture":"RDNA 3", "VRAM":"24GB GDDR6", "Stream processors":"6,144", "Upscaling":"FSR 3", "TDP":"355W", "Outputs":"2x DP 2.1, 1x HDMI 2.1, 1x USB-C", "Bus interface":"PCIe 4.0 x16" } },
+  { id:"arc-b580", name:"Arc B580", brand:"Intel", cat:"gpu", date:"2024-12-13", price:249, status:"confirmed",
+    summary:"Intel's Battlemage-generation budget card, aimed squarely at 1440p value gaming.",
+    ratings:{ quality:7, durability:7, value:9, specs:6 },
+    specs:{ "Architecture":"Battlemage (Xe2)", "VRAM":"12GB GDDR6", "Xe cores":"20", "Upscaling":"XeSS 2", "TDP":"190W", "Outputs":"3x DP 2.1, 1x HDMI 2.1", "Bus interface":"PCIe 4.0 x8" } },
+
+  { id:"apple-m4", name:"Apple M4", brand:"Apple", cat:"chip", date:"2024-10-30", price:null, status:"confirmed",
+    summary:"Apple's latest Mac silicon generation, built on a second-gen 3nm process with a significantly upgraded Neural Engine.",
+    ratings:{ quality:9, durability:9, value:7, specs:9 },
+    specs:{ "Process":"3nm (2nd gen)", "Debut device":"iMac / Mac mini, then MacBook Pro", "Focus":"AI/Neural Engine performance", "CPU cores":"Up to 10 (4P+6E)", "GPU cores":"Up to 10", "Power envelope":"~22W SoC" } },
+  { id:"apple-m3", name:"Apple M3", brand:"Apple", cat:"chip", date:"2023-10-30", price:null, status:"confirmed",
+    summary:"Brought hardware-accelerated ray tracing to Apple silicon for the first time, across M3, M3 Pro, and M3 Max tiers.",
+    ratings:{ quality:8, durability:9, value:7, specs:7 },
+    specs:{ "Process":"3nm (1st gen)", "New feature":"Hardware ray tracing", "Debut device":"MacBook Pro", "CPU cores":"8 (4P+4E)", "GPU cores":"Up to 10", "Power envelope":"~20W SoC" } },
+  { id:"apple-m2", name:"Apple M2", brand:"Apple", cat:"chip", date:"2022-06-06", price:null, status:"confirmed",
+    summary:"An efficiency-focused refresh of the M1 architecture, launched alongside the redesigned MacBook Air.",
+    ratings:{ quality:8, durability:9, value:7, specs:6 },
+    specs:{ "Process":"5nm (enhanced)", "Debut device":"MacBook Air (redesigned)", "Focus":"Efficiency + unified memory bandwidth", "CPU cores":"8 (4P+4E)", "GPU cores":"Up to 10", "Power envelope":"~20W SoC" } },
+  { id:"apple-m1", name:"Apple M1", brand:"Apple", cat:"chip", date:"2020-11-10", price:null, status:"confirmed",
+    summary:"Apple's first in-house Mac chip, marking the start of the transition away from Intel processors.",
+    ratings:{ quality:8, durability:9, value:8, specs:6 },
+    specs:{ "Process":"5nm", "Milestone":"First Apple Silicon Mac chip", "Debut device":"MacBook Air, MacBook Pro, Mac mini", "CPU cores":"8 (4P+4E)", "GPU cores":"Up to 8", "Power envelope":"~15W SoC" } },
+  { id:"ryzen-9850x3d", name:"Ryzen 7 9850X3D", brand:"AMD", cat:"chip", date:"2026-01-06", price:479, status:"confirmed",
+    summary:"Announced at CES 2026 as part of AMD's gaming CPU refresh, sitting alongside the new Ryzen AI 400 mobile chips.",
+    ratings:{ quality:8, durability:8, value:7, specs:9 },
+    specs:{ "Segment":"Desktop gaming CPU", "Architecture":"3D V-Cache", "Announced":"CES 2026", "Cores/Threads":"8C/16T", "Cache":"3D V-Cache, up to 144MB", "TDP":"120W" } },
+  { id:"core-ultra-3", name:"Core Ultra Series 3 (Panther Lake)", brand:"Intel", cat:"chip", date:"2026-01-06", price:null, status:"confirmed",
+    summary:"Intel's next laptop chip generation, launched at CES 2026 and adopted across the year's new ultrabook and gaming-laptop lines.",
+    ratings:{ quality:8, durability:8, value:7, specs:8 },
+    specs:{ "Segment":"Laptop CPU", "Codename":"Panther Lake", "Adopted by":"Dell, Alienware, Acer, and others", "Cores":"Up to 16 (P+E+LP-E)", "NPU":"Up to 50 TOPS", "TDP":"Configurable 15-45W" } },
+  { id:"n1x-superchip", name:"GB10 / N1X Superchip", brand:"Nvidia", cat:"chip", date:"2026-03-01", price:2899, status:"confirmed",
+    summary:"A two-die design pairing a 20-core Arm Grace CPU with a Blackwell iGPU over NVLink-C2C, shipping in compact AI laptops.",
+    ratings:{ quality:9, durability:8, value:5, specs:10 },
+    specs:{ "iGPU":"N1X, ~6,144 CUDA cores (RTX 5070-class)", "Tensor cores":"5th-gen, with FP4 support", "OEMs at launch":"Asus, Dell, HP, Lenovo, MSI, Surface", "CPU":"20-core Arm Grace", "Memory":"Unified LPDDR5X pool", "Interconnect":"NVLink-C2C" } },
+  { id:"snapdragon-8-elite-gen2", name:"Snapdragon 8 Elite Gen 2", brand:"Qualcomm", cat:"chip", date:"2026-02-20", price:null, status:"confirmed",
+    summary:"Qualcomm's 2026 flagship mobile platform, powering the Galaxy S26 line and other early-2026 Android flagships.",
+    ratings:{ quality:8, durability:8, value:7, specs:9 },
+    specs:{ "Segment":"Flagship mobile SoC", "CPU":"3rd-gen custom Oryon cores", "Process":"3nm (enhanced)", "GPU":"Adreno, hardware ray tracing", "NPU":"Hexagon, on-device generative AI" } },
+  { id:"dimensity-9400", name:"Dimensity 9400", brand:"MediaTek", cat:"chip", date:"2024-09-26", price:null, status:"confirmed",
+    summary:"MediaTek's flagship SoC built entirely on all-big-core design, aimed at premium Android phones outside the US market.",
+    ratings:{ quality:7, durability:7, value:8, specs:7 },
+    specs:{ "Segment":"Flagship mobile SoC", "CPU":"All-big-core, Cortex-X925 prime", "Process":"3nm (TSMC N3E)", "GPU":"Immortalis-G925 with ray tracing", "NPU":"APU 790" } },
+  { id:"snapdragon-x2-elite", name:"Snapdragon X2 Elite", brand:"Qualcomm", cat:"chip", date:"2025-09-23", price:null, status:"confirmed",
+    summary:"Qualcomm's second-generation Windows-on-Arm laptop platform, aimed squarely at premium ultrabooks.",
+    ratings:{ quality:8, durability:8, value:7, specs:8 },
+    specs:{ "Segment":"Laptop SoC (Windows on Arm)", "CPU":"Oryon 2nd-gen cores", "NPU":"Up to 80 TOPS", "GPU":"Adreno integrated", "TDP":"Configurable up to 80W (peak)" } },
+
+  { id:"ddr5", name:"DDR5 RAM", brand:"JEDEC standard", cat:"memory", date:"2021-11-04", price:null, status:"confirmed",
+    summary:"Debuted alongside Intel's Alder Lake platform; current-generation modules now push well past 8,000 MT/s.",
+    ratings:{ quality:8, durability:8, value:6, specs:8 },
+    specs:{ "Speed at launch":"4,800 MT/s", "Speed in 2026":"8,000+ MT/s (high-end kits)", "Voltage":"1.1V", "Max module density":"Up to 256GB (RDIMM)", "Latency (typ. CL)":"CL36-40", "Use case":"Mainstream desktop/laptop" } },
+  { id:"ddr4", name:"DDR4 RAM", brand:"JEDEC standard", cat:"memory", date:"2014-09-01", price:null, status:"confirmed",
+    summary:"The dominant desktop and laptop memory standard through the late 2010s, still widely used in budget systems.",
+    ratings:{ quality:7, durability:8, value:9, specs:5 },
+    specs:{ "Speed range":"1,600-3,200+ MT/s", "Voltage":"1.2V", "Successor":"DDR5", "Latency (typ. CL)":"CL16-19", "Use case":"Mainstream desktop/laptop (older platforms)" } },
+  { id:"ddr3", name:"DDR3 RAM", brand:"JEDEC standard", cat:"memory", date:"2007-06-01", price:null, status:"confirmed",
+    summary:"The long-running standard through the 2010s, eventually phased out as DDR4 platforms became mainstream.",
+    ratings:{ quality:6, durability:7, value:8, specs:3 },
+    specs:{ "Speed range":"800-2,133 MT/s", "Voltage":"1.5V", "Successor":"DDR4", "Latency (typ. CL)":"CL9-11", "Use case":"Legacy desktop/laptop" } },
+  { id:"hbm4e-samples", name:"HBM4E memory (12-layer)", brand:"Samsung", cat:"memory", date:"2026-05-01", price:null, status:"confirmed",
+    summary:"Samsung's first 12-layer HBM4E samples, built on 1c DRAM with a 4nm logic base die, aimed at next-gen AI accelerators.",
+    ratings:{ quality:9, durability:8, value:4, specs:10 },
+    specs:{ "Speed":"14 Gbps (up to 16 Gbps)", "Bandwidth":"3.6 TB/s per stack", "Capacity":"48GB per stack", "Interface width":"2048-bit per stack", "Use case":"AI accelerators, data center GPUs" } },
+  { id:"gddr7", name:"GDDR7 memory", brand:"JEDEC standard", cat:"memory", date:"2024-10-01", price:null, status:"confirmed",
+    summary:"The current graphics memory standard, introduced alongside the RTX 50 series with PAM3 signaling for a big bandwidth jump.",
+    ratings:{ quality:8, durability:8, value:6, specs:9 },
+    specs:{ "Speed":"Up to 32 Gbps per pin", "Signaling":"PAM3", "Successor to":"GDDR6X", "Use case":"Discrete GPUs, high-end graphics cards" } },
+  { id:"lpddr5x", name:"LPDDR5X memory", brand:"JEDEC standard", cat:"memory", date:"2023-01-01", price:null, status:"confirmed",
+    summary:"The low-power mobile memory standard used across recent flagship phones and thin laptops.",
+    ratings:{ quality:8, durability:8, value:7, specs:7 },
+    specs:{ "Speed":"Up to 8,533 MT/s", "Voltage":"0.9-1.05V", "Use case":"Flagship phones, ultraportable laptops", "Successor to":"LPDDR5" } },
+
+  { id:"xps-revival", name:"XPS (relaunched)", brand:"Dell", cat:"laptop", date:"2026-01-06", price:null, status:"confirmed",
+    summary:"Dell brought back its XPS branding at CES 2026 after briefly retiring it in a prior rebrand.",
+    ratings:{ quality:7, durability:7, value:6, specs:5 },
+    specs:{ "Segment":"Premium consumer laptop", "Status":"Branding relaunch, CES 2026", "RAM/Storage":"TBA", "Weight":"TBA", "Ports":"TBA (relaunch pending full specs)" } },
+  { id:"area-51-oled", name:"Area-51 (OLED refresh)", brand:"Alienware", cat:"laptop", date:"2026-01-06", price:null, status:"confirmed",
+    summary:"Alienware's CES 2026 lineup added OLED panels to the Area-51 line, plus new ultraslim and budget gaming laptop classes.",
+    ratings:{ quality:8, durability:7, value:6, specs:8 },
+    specs:{ "Display":"New OLED option", "New tiers":"Ultraslim covert line + budget line", "RAM/Storage":"Up to 64GB / 4TB SSD (expected)", "Weight":"~3.2kg", "Ports":"USB-C (Thunderbolt), USB-A, HDMI" } },
+  { id:"macbook-pro-m4", name:"MacBook Pro (M4)", brand:"Apple", cat:"laptop", date:"2024-11-08", price:1599, status:"confirmed",
+    summary:"Brought the M4 family to Apple's pro laptop line with a brighter nano-texture display option.",
+    ratings:{ quality:9, durability:9, value:7, specs:9 },
+    specs:{ "Chip":"M4 / M4 Pro / M4 Max", "Display":"Liquid Retina XDR", "RAM/Storage":"Up to 128GB / 8TB SSD", "Weight":"1.55kg-2.15kg (by size)", "Ports":"3x Thunderbolt 5, HDMI, SDXC, MagSafe 3" } },
+  { id:"macbook-air-m4", name:"MacBook Air (M4)", brand:"Apple", cat:"laptop", date:"2025-03-12", price:999, status:"confirmed",
+    summary:"The thin-and-light Air line moved to M4, with a new sky blue color option.",
+    ratings:{ quality:9, durability:8, value:8, specs:8 },
+    specs:{ "Chip":"M4", "Segment":"Consumer ultraportable", "RAM/Storage":"Up to 32GB / 2TB SSD", "Weight":"1.24kg-1.51kg (by size)", "Ports":"2x Thunderbolt, MagSafe 3" } },
+  { id:"macbook-pro-m5", name:"MacBook Pro (M5)", brand:"Apple", cat:"laptop", date:"2025-10-22", price:1599, status:"confirmed",
+    summary:"Brought the M5 chip to the base 14-inch Pro, with a Neural Accelerator in every GPU core for a big jump in on-device AI performance over M4.",
+    ratings:{ quality:9, durability:9, value:7, specs:9 },
+    specs:{ "Chip":"M5", "Display":"14.2in Liquid Retina XDR, 3024x1964", "RAM/Storage":"Up to 32GB / 2TB SSD", "Battery":"Up to 24 hours", "Ports":"3x Thunderbolt 4, HDMI, SDXC, MagSafe 3" } },
+  { id:"macbook-pro-m5-pro-max", name:"MacBook Pro (M5 Pro/M5 Max)", brand:"Apple", cat:"laptop", date:"2026-03-11", price:2699, status:"confirmed",
+    summary:"Extended M5 to the 14- and 16-inch Pro lineup with M5 Pro and M5 Max chips, Apple's biggest professional Mac update this cycle — alongside a price increase.",
+    ratings:{ quality:9, durability:9, value:6, specs:10 },
+    specs:{ "Chip":"M5 Pro / M5 Max", "Display":"14.2in or 16.2in Liquid Retina XDR", "RAM/Storage":"Up to 128GB / 8TB SSD", "Weight":"1.6kg-2.16kg (by size)", "Ports":"3x Thunderbolt 5, HDMI, SDXC, MagSafe 3" } },
+  { id:"framework-13", name:"Framework Laptop 13", brand:"Framework", cat:"laptop", date:"2024-06-18", price:1099, status:"confirmed",
+    summary:"A repairable, modular ultrabook with swappable ports and a mainboard designed to be upgraded rather than replaced.",
+    ratings:{ quality:8, durability:9, value:8, specs:7 },
+    specs:{ "Chip":"Intel Core Ultra / AMD Ryzen AI (configurable)", "Display":"13.5in 2256x1504, 120Hz option", "RAM/Storage":"Up to 64GB / user-upgradable SSD", "Weight":"~1.3kg", "Ports":"4x user-swappable Expansion Cards" } },
+  { id:"rog-zephyrus-g16", name:"ROG Zephyrus G16", brand:"Asus", cat:"laptop", date:"2025-01-07", price:1999, status:"confirmed",
+    summary:"Asus's flagship thin gaming laptop, pairing an OLED panel with recent-generation mobile RTX graphics.",
+    ratings:{ quality:8, durability:7, value:6, specs:9 },
+    specs:{ "Chip":"Intel Core Ultra 9", "GPU":"RTX 5070 Ti/5080 Laptop GPU", "Display":"16in 2.5K OLED, 240Hz", "RAM/Storage":"Up to 32GB / 2TB SSD", "Weight":"~1.85kg" } },
+  { id:"thinkpad-x1-carbon-g12", name:"ThinkPad X1 Carbon Gen 12", brand:"Lenovo", cat:"laptop", date:"2024-05-01", price:1699, status:"confirmed",
+    summary:"Lenovo's flagship business ultrabook, prized for its keyboard, MIL-SPEC durability testing, and long support lifecycle.",
+    ratings:{ quality:9, durability:9, value:7, specs:8 },
+    specs:{ "Chip":"Intel Core Ultra 7 (Meteor Lake)", "Display":"14in 2.8K OLED option", "RAM/Storage":"Up to 64GB / 2TB SSD", "Weight":"~1.12kg", "Ports":"2x Thunderbolt 4, HDMI, USB-A" } },
+  { id:"razer-blade-16", name:"Razer Blade 16", brand:"Razer", cat:"laptop", date:"2025-02-01", price:2999, status:"confirmed",
+    summary:"Razer's premium gaming laptop with a dual-mode Mini-LED display and CNC-machined aluminum chassis.",
+    ratings:{ quality:8, durability:7, value:4, specs:9 },
+    specs:{ "Chip":"Intel Core Ultra 9", "GPU":"Up to RTX 5090 Laptop GPU", "Display":"16in dual-mode Mini-LED (UHD+/FHD+ 240Hz)", "RAM/Storage":"Up to 64GB / 4TB SSD", "Weight":"~2.4kg" } },
+  { id:"surface-laptop-7", name:"Surface Laptop 7", brand:"Microsoft", cat:"laptop", date:"2024-06-18", price:999, status:"confirmed",
+    summary:"Microsoft's Copilot+ PC ultrabook, running on Snapdragon X Arm silicon with all-day battery life.",
+    ratings:{ quality:8, durability:7, value:7, specs:7 },
+    specs:{ "Chip":"Snapdragon X Plus / X Elite", "Display":"13.8in or 15in PixelSense touch", "RAM/Storage":"Up to 64GB / 1TB SSD", "Weight":"~1.34kg", "Battery":"Up to ~20hrs local video" } },
+  { id:"hp-spectre-x360-14", name:"Spectre x360 14", brand:"HP", cat:"laptop", date:"2023-01-05", price:1449, status:"confirmed",
+    summary:"HP's flagship 2-in-1 convertible, known for its gem-cut aluminum design and an OLED touchscreen option.",
+    ratings:{ quality:8, durability:8, value:6, specs:7 },
+    specs:{ "Chip":"Intel Core i7 (13th Gen)", "Display":"13.5in 3K2K OLED touch, 400 nits", "RAM/Storage":"16GB / 1TB SSD", "Weight":"~1.36kg", "Ports":"2x Thunderbolt 4, USB-A, microSD" } },
+  { id:"hp-omen-16", name:"Omen 16", brand:"HP", cat:"laptop", date:"2023-04-01", price:1400, status:"confirmed",
+    summary:"HP's mainstream gaming laptop, balancing RTX graphics with a more understated design than typical gaming rigs.",
+    ratings:{ quality:7, durability:7, value:7, specs:8 },
+    specs:{ "Chip":"Intel Core i9 / AMD Ryzen 9 (config)", "GPU":"Up to RTX 4080 Laptop GPU", "Display":"16.1in QHD, 240Hz", "RAM/Storage":"Up to 32GB / 2TB SSD", "Weight":"~2.4kg" } },
+  { id:"dell-xps-13", name:"XPS 13", brand:"Dell", cat:"laptop", date:"2022-05-01", price:999, status:"confirmed",
+    summary:"Dell's iconic ultraportable, long praised for its InfinityEdge display and compact chassis.",
+    ratings:{ quality:8, durability:7, value:7, specs:6 },
+    specs:{ "Chip":"Intel Core i5/i7 (12th Gen)", "Display":"13.4in FHD+ InfinityEdge", "RAM/Storage":"Up to 32GB / 1TB SSD", "Weight":"~1.17kg", "Ports":"2x Thunderbolt 4 (USB-C only)" } },
+  { id:"dell-xps-15", name:"XPS 15", brand:"Dell", cat:"laptop", date:"2023-05-01", price:1699, status:"confirmed",
+    summary:"The larger XPS aimed at creators, pairing an optional 3.5K OLED display with discrete Nvidia graphics.",
+    ratings:{ quality:8, durability:7, value:6, specs:7 },
+    specs:{ "Chip":"Intel Core i7/i9 (13th Gen)", "GPU":"RTX 4050/4060 Laptop GPU (optional)", "Display":"15.6in 3.5K OLED option", "RAM/Storage":"Up to 64GB / 2TB SSD", "Weight":"~1.86kg" } },
+
+  { id:"rog-xreal-r1", name:"ROG XREAL R1", brand:"Asus", cat:"other", date:"2026-01-06", price:null, status:"confirmed",
+    summary:"AR gaming glasses announced after Asus ended its Horizon OS headset partnership with Meta, teaming with XREAL instead.",
+    ratings:{ quality:7, durability:6, value:6, specs:7 },
+    specs:{ "Category":"AR gaming glasses", "Partner":"XREAL (post-Meta)", "Display":"Micro-OLED per eye (expected)", "Tracking":"6DoF head tracking", "Connection":"USB-C tethered to phone/PC" } },
+  { id:"samsung-6k-monitor", name:"6K glasses-free 3D monitor", brand:"Samsung", cat:"monitor", date:"2026-01-06", price:null, status:"confirmed",
+    summary:"A 6K display with real-time eye tracking, billed as the industry's first of its kind, unveiled at CES 2026.",
+    ratings:{ quality:8, durability:7, value:5, specs:9 },
+    specs:{ "Resolution":"6K", "Feature":"Glasses-free 3D, real-time eye tracking", "Panel size":"Expected 27in-32in class", "Refresh rate":"Up to 165Hz (expected)" } },
+  { id:"meta-quest-3s", name:"Meta Quest 3S", brand:"Meta", cat:"other", date:"2024-10-15", price:299, status:"confirmed",
+    summary:"Meta's budget mixed-reality headset, bringing color passthrough down to an entry-level price point.",
+    ratings:{ quality:7, durability:7, value:9, specs:7 },
+    specs:{ "Category":"Standalone VR/MR headset", "Chip":"Snapdragon XR2 Gen 2", "Display":"Fresnel lenses, 1832x1920 per eye", "Passthrough":"Full-color mixed reality", "Storage":"128GB / 256GB" } },
+  { id:"apple-vision-pro", name:"Apple Vision Pro", brand:"Apple", cat:"other", date:"2024-02-02", price:3499, status:"confirmed",
+    summary:"Apple's spatial computing headset, built around micro-OLED displays and eye/hand tracking as the primary input.",
+    ratings:{ quality:9, durability:7, value:3, specs:10 },
+    specs:{ "Category":"Standalone spatial computer", "Chip":"M2 + R1 co-processor", "Display":"Micro-OLED, 23M pixels combined", "Input":"Eye tracking + hand gestures", "Battery":"External pack, ~2hrs" } },
+  { id:"steam-deck-oled", name:"Steam Deck OLED", brand:"Valve", cat:"console", date:"2023-11-16", price:549, status:"confirmed",
+    summary:"Valve's refreshed handheld, swapping in an HDR OLED screen and a larger battery without changing the core price.",
+    ratings:{ quality:8, durability:8, value:9, specs:7 },
+    specs:{ "Category":"Handheld gaming PC", "Display":"7.4in HDR OLED, 90Hz", "Chip":"AMD APU (Zen 2 + RDNA 2)", "Battery":"50Whr (up from 40Whr)", "Storage":"512GB/1TB NVMe SSD" } },
+
+  { id:"apple-studio-display", name:"Studio Display", brand:"Apple", cat:"monitor", date:"2022-03-18", price:1599, status:"confirmed",
+    summary:"A 27-inch 5K display with a built-in A13 chip powering its Center Stage camera and spatial audio.",
+    ratings:{ quality:8, durability:8, value:6, specs:7 },
+    specs:{ "Panel":"27in 5K Retina LCD", "Resolution":"5120x2880", "Brightness":"600 nits", "Refresh rate":"60Hz", "Ports":"Thunderbolt 3 + 3x USB-C hub" } },
+  { id:"apple-pro-display-xdr", name:"Pro Display XDR", brand:"Apple", cat:"monitor", date:"2019-12-10", price:4999, status:"confirmed",
+    summary:"Apple's reference-grade production display, capable of sustained 1,000-nit HDR brightness.",
+    ratings:{ quality:9, durability:9, value:3, specs:10 },
+    specs:{ "Panel":"32in Retina 6K LCD", "Resolution":"6016x3384", "Brightness":"1,000 nits sustained, 1,600 peak", "Contrast":"1,000,000:1 (nano-texture option)", "Ports":"Thunderbolt 3" } },
+  { id:"odyssey-oled-g9", name:"Odyssey OLED G9", brand:"Samsung", cat:"monitor", date:"2023-08-01", price:1799, status:"confirmed",
+    summary:"A 49-inch curved OLED ultrawide built for simming and multitasking, with a 240Hz refresh rate.",
+    ratings:{ quality:8, durability:7, value:6, specs:9 },
+    specs:{ "Panel":"49in curved QD-OLED, 1000R", "Resolution":"5120x1440 (DQHD)", "Refresh rate":"240Hz", "Response time":"0.03ms", "Ports":"2x HDMI 2.1, DisplayPort 1.4" } },
+  { id:"odyssey-neo-g9-57", name:"Odyssey Neo G9 (57\")", brand:"Samsung", cat:"monitor", date:"2023-10-17", price:2499, status:"confirmed",
+    summary:"An 8K-equivalent dual-4K ultrawide with Mini LED backlighting, one of the largest gaming monitors made.",
+    ratings:{ quality:8, durability:7, value:4, specs:10 },
+    specs:{ "Panel":"57in curved Mini LED VA, 1000R", "Resolution":"7680x2160 (dual 4K)", "Refresh rate":"240Hz", "Brightness":"Up to 1,000 nits", "Ports":"2x HDMI 2.1, DisplayPort 1.4" } },
+  { id:"lg-ultragear-27gr95qe", name:"UltraGear 27GR95QE", brand:"LG", cat:"monitor", date:"2023-04-01", price:999, status:"confirmed",
+    summary:"A 27-inch QHD OLED gaming monitor pairing near-instant response times with a 240Hz refresh rate.",
+    ratings:{ quality:8, durability:7, value:7, specs:8 },
+    specs:{ "Panel":"27in QD-OLED", "Resolution":"2560x1440", "Refresh rate":"240Hz", "Response time":"0.03ms", "Ports":"2x HDMI 2.1, DisplayPort 1.4" } },
+  { id:"dell-ultrasharp-u3223qe", name:"UltraSharp U3223QE", brand:"Dell", cat:"monitor", date:"2022-09-01", price:979, status:"confirmed",
+    summary:"A 4K productivity monitor with an IPS Black panel and a built-in USB-C hub for single-cable docking.",
+    ratings:{ quality:8, durability:8, value:7, specs:6 },
+    specs:{ "Panel":"32in IPS Black", "Resolution":"3840x2160", "Brightness":"400 nits", "Ports":"USB-C (90W PD), Thunderbolt daisy-chain, RJ45", "Refresh rate":"60Hz" } },
+  { id:"rog-swift-pg27aqdm", name:"ROG Swift PG27AQDM", brand:"Asus", cat:"monitor", date:"2023-06-01", price:899, status:"confirmed",
+    summary:"Asus's 27-inch QD-OLED gaming monitor, combining a 240Hz refresh rate with true HDR contrast.",
+    ratings:{ quality:8, durability:7, value:6, specs:9 },
+    specs:{ "Panel":"27in QD-OLED", "Resolution":"2560x1440", "Refresh rate":"240Hz", "Response time":"0.03ms", "HDR":"DisplayHDR True Black 400" } },
+
+  { id:"samsung-s95d-oled", name:"S95D OLED", brand:"Samsung", cat:"tv", date:"2024-03-01", price:2599, status:"confirmed",
+    summary:"Samsung's flagship OLED TV, using an anti-glare panel treatment to stay watchable in bright rooms.",
+    ratings:{ quality:9, durability:8, value:5, specs:9 },
+    specs:{ "Panel":"QD-OLED", "Sizes":"55in-83in", "Resolution":"4K, 144Hz", "HDR":"HDR10+, no Dolby Vision", "Smart platform":"Tizen" } },
+  { id:"lg-g4-oled", name:"G4 OLED", brand:"LG", cat:"tv", date:"2024-03-01", price:2599, status:"confirmed",
+    summary:"LG's brightest OLED TV yet, built to hang flush on the wall with its Gallery-style design.",
+    ratings:{ quality:9, durability:8, value:5, specs:9 },
+    specs:{ "Panel":"OLED evo (MLA)", "Sizes":"55in-97in", "Resolution":"4K, 144Hz", "HDR":"Dolby Vision, HDR10", "Smart platform":"webOS" } },
+  { id:"sony-bravia-9", name:"Bravia 9", brand:"Sony", cat:"tv", date:"2024-04-01", price:2999, status:"confirmed",
+    summary:"Sony's Mini LED flagship, pairing a bright backlight with its Cognitive Processor XR for motion handling.",
+    ratings:{ quality:9, durability:8, value:4, specs:9 },
+    specs:{ "Panel":"Mini LED", "Sizes":"65in-85in", "Resolution":"4K, 120Hz", "HDR":"Dolby Vision, HDR10", "Smart platform":"Google TV" } },
+  { id:"samsung-qn90d", name:"Neo QLED QN90D", brand:"Samsung", cat:"tv", date:"2024-03-01", price:1999, status:"confirmed",
+    summary:"Samsung's step-down Neo QLED, using Mini LED backlighting for strong brightness at a lower price than the OLED line.",
+    ratings:{ quality:8, durability:8, value:7, specs:8 },
+    specs:{ "Panel":"Neo QLED (Mini LED)", "Sizes":"43in-98in", "Resolution":"4K, 165Hz", "HDR":"HDR10+, no Dolby Vision", "Smart platform":"Tizen" } },
+  { id:"lg-c4-oled", name:"C4 OLED", brand:"LG", cat:"tv", date:"2024-03-01", price:1699, status:"confirmed",
+    summary:"LG's mainstream OLED, widely regarded as the best value entry point into OLED picture quality.",
+    ratings:{ quality:8, durability:8, value:8, specs:8 },
+    specs:{ "Panel":"OLED evo", "Sizes":"42in-83in", "Resolution":"4K, 144Hz", "HDR":"Dolby Vision, HDR10", "Smart platform":"webOS" } },
+
+  { id:"ps5-pro", name:"PlayStation 5 Pro", brand:"Sony", cat:"console", date:"2024-11-07", price:699, status:"confirmed",
+    summary:"A mid-generation upgrade with a beefier GPU and AI upscaling, aimed at steadier 4K/60 performance.",
+    ratings:{ quality:8, durability:8, value:5, specs:9 },
+    specs:{ "CPU/GPU":"Custom AMD Zen 2 / RDNA GPU, 16.7 TFLOPs", "Storage":"2TB SSD", "Resolution target":"4K upscaled via PSSR", "Notable feature":"PlayStation Spectral Super Resolution (AI upscaling)", "Disc drive":"Sold separately" } },
+  { id:"ps5-slim", name:"PlayStation 5 (Slim)", brand:"Sony", cat:"console", date:"2023-11-10", price:499, status:"confirmed",
+    summary:"A smaller redesign of the original PS5, with a detachable disc drive and roughly 30% less volume.",
+    ratings:{ quality:8, durability:8, value:7, specs:7 },
+    specs:{ "CPU/GPU":"Custom AMD Zen 2 / RDNA 2 GPU, 10.28 TFLOPs", "Storage":"1TB SSD", "Resolution target":"Up to 4K, 120Hz", "Notable feature":"Detachable disc drive", "Backward compatibility":"PS4 games" } },
+  { id:"xbox-series-x", name:"Xbox Series X", brand:"Microsoft", cat:"console", date:"2020-11-10", price:499, status:"confirmed",
+    summary:"Microsoft's most powerful console, targeting native 4K/60 with ray tracing and near-instant resume.",
+    ratings:{ quality:8, durability:8, value:7, specs:8 },
+    specs:{ "CPU/GPU":"Custom AMD Zen 2 / RDNA 2 GPU, 12 TFLOPs", "Storage":"1TB NVMe SSD", "Resolution target":"Native 4K, up to 120Hz", "Notable feature":"Quick Resume, ray tracing", "Backward compatibility":"4 generations of Xbox games" } },
+  { id:"xbox-series-s", name:"Xbox Series S", brand:"Microsoft", cat:"console", date:"2020-11-10", price:299, status:"confirmed",
+    summary:"A smaller, disc-less Series console targeting 1440p, at roughly half the price of the Series X.",
+    ratings:{ quality:7, durability:7, value:9, specs:6 },
+    specs:{ "CPU/GPU":"Custom AMD Zen 2 / RDNA 2 GPU, 4 TFLOPs", "Storage":"512GB NVMe SSD", "Resolution target":"Up to 1440p, up to 120Hz", "Notable feature":"All-digital, smallest Xbox ever", "Backward compatibility":"4 generations of Xbox games" } },
+  { id:"switch-2", name:"Nintendo Switch 2", brand:"Nintendo", cat:"console", date:"2025-06-05", price:449, status:"confirmed",
+    summary:"Nintendo's successor to the Switch, with a larger 1080p display and magnetic Joy-Con 2 controllers.",
+    ratings:{ quality:8, durability:8, value:7, specs:7 },
+    specs:{ "Display":"7.9in LCD, 1080p, 120Hz", "Chip":"Custom Nvidia processor", "Storage":"256GB internal", "Notable feature":"Magnetic Joy-Con 2 with mouse mode", "Dock output":"Up to 4K on TV" } },
+  { id:"switch-oled", name:"Nintendo Switch OLED", brand:"Nintendo", cat:"console", date:"2021-10-08", price:349, status:"confirmed",
+    summary:"A mid-generation Switch refresh with a larger OLED screen and a wider adjustable kickstand.",
+    ratings:{ quality:7, durability:8, value:8, specs:5 },
+    specs:{ "Display":"7in OLED, 720p", "Chip":"Nvidia Tegra X1+", "Storage":"64GB internal", "Notable feature":"Wired LAN port in dock", "Battery":"4.5-9 hours" } }
+];
+
+const CATEGORY_ORDER = ["phone","tablet","laptop","gpu","chip","memory","monitor","tv","console","other"];
+const PAGE_SIZE = 24;
+const HEART_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.2-4.4-9.7-8.7C.6 8.6 2 4.6 6 4c2.1-.3 3.8.8 6 3.3C14.2 4.8 15.9 3.7 18 4c4 .6 5.4 4.6 3.7 8.3C19.2 16.6 12 21 12 21z"/></svg>';
+
+const WISHLIST_KEY = "releaseLedgerWishlist";
+const CART_KEY = "releaseLedgerCart";
+function loadWishlist(){
+  try{ return new Set(JSON.parse(localStorage.getItem(WISHLIST_KEY)) || []); }
+  catch(e){ return new Set(); }
+}
+function saveWishlist(){ localStorage.setItem(WISHLIST_KEY, JSON.stringify([...state.wishlist])); }
+function loadCart(){
+  try{ return new Map(Object.entries(JSON.parse(localStorage.getItem(CART_KEY)) || {})); }
+  catch(e){ return new Map(); }
+}
+function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(Object.fromEntries(state.cart))); }
+
+const RECENT_KEY = "releaseLedgerRecent";
+function loadRecent(){
+  try{ return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; }
+  catch(e){ return []; }
+}
+function saveRecent(){ localStorage.setItem(RECENT_KEY, JSON.stringify(state.recent)); }
+
+const THEME_KEY = "releaseLedgerTheme";
+function loadTheme(){
+  try{ return localStorage.getItem(THEME_KEY) || "dark"; }
+  catch(e){ return "dark"; }
+}
+function applyTheme(theme){
+  document.documentElement.setAttribute("data-theme", theme);
+  document.getElementById("themeToggle").setAttribute("aria-label", theme === "light" ? "Switch to dark theme" : "Switch to light theme");
+}
+
+const COOKIE_CONSENT_KEY = "releaseLedgerCookieConsent";
+
+const SUPABASE_URL = "https://iirduozvzvjgwmewjtjg.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_QZblyM5JLa7bGSW_LBogTQ_pdOwPeP3";
+const supabaseClient = (typeof window.supabase !== "undefined")
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+let currentUser = null;
+
+async function syncWishlistAdd(id){
+  if(!currentUser) return;
+  const { error } = await supabaseClient.from("wishlist").upsert({ user_id: currentUser.id, product_id: id });
+  if(error) console.error("Wishlist sync (add) failed:", error.message);
+}
+async function syncWishlistRemove(id){
+  if(!currentUser) return;
+  const { error } = await supabaseClient.from("wishlist").delete().eq("user_id", currentUser.id).eq("product_id", id);
+  if(error) console.error("Wishlist sync (remove) failed:", error.message);
+}
+async function syncWishlistClear(){
+  if(!currentUser) return;
+  const { error } = await supabaseClient.from("wishlist").delete().eq("user_id", currentUser.id);
+  if(error) console.error("Wishlist sync (clear) failed:", error.message);
+}
+async function syncCartUpsert(id, qty){
+  if(!currentUser) return;
+  const { error } = await supabaseClient.from("cart").upsert({ user_id: currentUser.id, product_id: id, qty });
+  if(error) console.error("Cart sync (upsert) failed:", error.message);
+}
+async function syncCartRemove(id){
+  if(!currentUser) return;
+  const { error } = await supabaseClient.from("cart").delete().eq("user_id", currentUser.id).eq("product_id", id);
+  if(error) console.error("Cart sync (remove) failed:", error.message);
+}
+async function syncCartClear(){
+  if(!currentUser) return;
+  const { error } = await supabaseClient.from("cart").delete().eq("user_id", currentUser.id);
+  if(error) console.error("Cart sync (clear) failed:", error.message);
+}
+
+async function pullCloudData(){
+  if(!currentUser || !supabaseClient) return;
+  const [{ data: wlRows, error: wlErr }, { data: cartRows, error: cartErr }] = await Promise.all([
+    supabaseClient.from("wishlist").select("product_id").eq("user_id", currentUser.id),
+    supabaseClient.from("cart").select("product_id, qty").eq("user_id", currentUser.id)
+  ]);
+  if(wlErr){ console.error("Wishlist pull failed:", wlErr.message); }
+  if(cartErr){ console.error("Cart pull failed:", cartErr.message); }
+
+  const cloudWishlistIds = new Set((wlRows || []).map(r => r.product_id));
+  const localOnlyWishlist = [...state.wishlist].filter(id => !cloudWishlistIds.has(id));
+  await Promise.all(localOnlyWishlist.map(id => syncWishlistAdd(id)));
+  state.wishlist = new Set([...state.wishlist, ...cloudWishlistIds]);
+  saveWishlist();
+
+  const cloudCartMap = new Map((cartRows || []).map(r => [r.product_id, r.qty]));
+  const localOnlyCart = [...state.cart.entries()].filter(([id]) => !cloudCartMap.has(id));
+  await Promise.all(localOnlyCart.map(([id, qty]) => syncCartUpsert(id, qty)));
+  const mergedCart = new Map(cloudCartMap);
+  localOnlyCart.forEach(([id, qty]) => mergedCart.set(id, qty));
+  state.cart = mergedCart;
+  saveCart();
+
+  render(); updateHeaderCounts();
+  if(document.getElementById("wishlistOverlay").classList.contains("show")) renderWishlistPanel();
+  if(document.getElementById("cartOverlay").classList.contains("show")) renderCartPanel();
+}
+
+function renderAccountPanel(){
+  const body = document.getElementById("accountBody");
+  if(!supabaseClient){
+    body.innerHTML = '<p class="unreleased-note">Account system is temporarily unavailable — please refresh the page or try again shortly.</p>';
+    return;
+  }
+  if(currentUser){
+    body.innerHTML = `
+      <p style="margin:0 0 0.6rem; color:var(--ink-dim);">Signed in as <strong>${currentUser.email}</strong></p>
+      <p class="unreleased-note" style="margin:0 0 1.4rem;">Your wishlist and cart sync across every device you log into.</p>
+      <button class="btn-primary" id="logoutBtn" type="button" style="width:100%;">Log out</button>
+    `;
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+    });
+  } else {
+    body.innerHTML = `
+      <div class="account-form">
+        <label class="field-label" for="authEmail">Email</label>
+        <input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email">
+        <label class="field-label" for="authPassword" style="margin-top:0.9rem;">Password</label>
+        <input id="authPassword" type="password" placeholder="At least 6 characters" autocomplete="current-password">
+        <p class="auth-message" id="authMessage"></p>
+        <div style="display:flex; gap:0.7rem;">
+          <button class="btn-primary" id="loginBtn" type="button" style="flex:1;">Log in</button>
+          <button class="btn-ghost" id="signupBtn" type="button" style="flex:1;">Sign up</button>
+        </div>
+      </div>
+    `;
+    const emailEl = document.getElementById("authEmail");
+    const passEl = document.getElementById("authPassword");
+    const msgEl = document.getElementById("authMessage");
+    const setMsg = (text, cls) => { msgEl.textContent = text; msgEl.className = "auth-message" + (cls ? " " + cls : ""); };
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      if(!emailEl.value || !passEl.value){ setMsg("Enter your email and password.", "error"); return; }
+      setMsg("Logging in...");
+      const { error } = await supabaseClient.auth.signInWithPassword({ email: emailEl.value.trim(), password: passEl.value });
+      if(error) setMsg(error.message, "error");
+    });
+    document.getElementById("signupBtn").addEventListener("click", async () => {
+      if(!emailEl.value || !passEl.value){ setMsg("Enter an email and password.", "error"); return; }
+      if(passEl.value.length < 6){ setMsg("Password must be at least 6 characters.", "error"); return; }
+      setMsg("Creating account...");
+      const { error } = await supabaseClient.auth.signUp({ email: emailEl.value.trim(), password: passEl.value });
+      if(error) setMsg(error.message, "error");
+      else setMsg("Check your email to confirm your account, then log in.", "ok");
+    });
+  }
+}
+
+if(supabaseClient){
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    currentUser = session ? session.user : null;
+    document.getElementById("accountIndicator").classList.toggle("show", !!currentUser);
+    if(document.getElementById("accountOverlay").classList.contains("show")) renderAccountPanel();
+    if(currentUser) pullCloudData();
+  });
+}
+
+const state = {
+  search: "", cat: "all", brand: "all", gen: "all", sort: "category", recommendedOnly: false, confirmedOnly: false,
+  maxPrice: null, displayType: "", minRam: null, visibleCount: PAGE_SIZE, selected: new Set(), wishlist: loadWishlist(), cart: loadCart(),
+  recent: loadRecent(), theme: loadTheme()
+};
+function resetPaging(){ state.visibleCount = PAGE_SIZE; }
+
+function toggleWishlist(id){
+  if(state.wishlist.has(id)){ state.wishlist.delete(id); syncWishlistRemove(id); }
+  else { state.wishlist.add(id); syncWishlistAdd(id); }
+  saveWishlist();
+  render(); updateHeaderCounts();
+  if(document.getElementById("wishlistOverlay").classList.contains("show")) renderWishlistPanel();
+}
+function toggleCart(id){
+  if(state.cart.has(id)){ state.cart.delete(id); syncCartRemove(id); }
+  else { state.cart.set(id, 1); syncCartUpsert(id, 1); }
+  saveCart();
+  render(); updateHeaderCounts();
+  if(document.getElementById("cartOverlay").classList.contains("show")) renderCartPanel();
+}
+function changeCartQty(id, delta){
+  const qty = (state.cart.get(id) || 1) + delta;
+  if(qty <= 0){ state.cart.delete(id); syncCartRemove(id); }
+  else { state.cart.set(id, qty); syncCartUpsert(id, qty); }
+  saveCart();
+  updateHeaderCounts();
+  renderCartPanel();
+}
+function updateHeaderCounts(){
+  const wc = state.wishlist.size;
+  const cc = [...state.cart.values()].reduce((sum,n) => sum+n, 0);
+  const wEl = document.getElementById("wishlistCount"), cEl = document.getElementById("cartCount");
+  wEl.textContent = wc; wEl.classList.toggle("show", wc > 0);
+  cEl.textContent = cc; cEl.classList.toggle("show", cc > 0);
+}
+function renderWishlistPanel(){
+  const items = [...state.wishlist].map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+  const body = document.getElementById("wishlistBody");
+  if(items.length === 0){ body.innerHTML = '<div class="panel-empty">Nothing saved yet — click the heart on any product to add it here.</div>'; return; }
+  body.innerHTML = items.map(p => `
+    <div class="panel-item">
+      <div class="panel-item-icon cover-${p.cat}">${COVERS[p.cat]}</div>
+      <div class="panel-item-main">
+        <p class="panel-item-name">${p.name}</p>
+        <p class="panel-item-meta">${p.brand} &middot; ${fmtPrice(p.price)}</p>
+        ${panelAmazonLink(p)}
+      </div>
+      <div class="panel-item-actions">
+        <button class="btn-secondary" style="width:auto;" data-id="${p.id}" onclick="toggleCart(this.dataset.id)">${state.cart.has(p.id)?'✓ In cart':'+ Cart'}</button>
+        <button class="panel-remove" data-id="${p.id}" onclick="toggleWishlist(this.dataset.id)">Remove</button>
+      </div>
+    </div>`).join("");
+}
+function renderCartPanel(){
+  const entries = [...state.cart.entries()].map(([id,qty]) => ({ p: PRODUCTS.find(x => x.id === id), qty })).filter(x => x.p);
+  const body = document.getElementById("cartBody");
+  if(entries.length === 0){ body.innerHTML = '<div class="panel-empty">Your cart is empty — add products you\'re thinking about buying.</div>'; return; }
+  const known = entries.filter(x => x.p.price != null);
+  const subtotal = known.reduce((sum,x) => sum + x.p.price*x.qty, 0);
+  const hasTBA = entries.some(x => x.p.price == null);
+  const rows = entries.map(({p,qty}) => `
+    <div class="panel-item">
+      <div class="panel-item-icon cover-${p.cat}">${COVERS[p.cat]}</div>
+      <div class="panel-item-main">
+        <p class="panel-item-name">${p.name}</p>
+        <p class="panel-item-meta">${p.brand} &middot; ${fmtPrice(p.price)} each</p>
+        ${panelAmazonLink(p)}
+      </div>
+      <div class="panel-item-actions">
+        <div class="qty-stepper">
+          <button onclick="changeCartQty('${p.id}',-1)">&minus;</button>
+          <span>${qty}</span>
+          <button onclick="changeCartQty('${p.id}',1)">+</button>
+        </div>
+        <span class="panel-item-price">${p.price!=null ? fmtPrice(p.price*qty) : 'TBA'}</span>
+        <button class="panel-remove" onclick="toggleCart('${p.id}')">Remove</button>
+      </div>
+    </div>`).join("");
+  body.innerHTML = rows + `
+    <div class="panel-summary">
+      <span class="unreleased-note" style="margin-right:0;">${hasTBA ? 'Estimated subtotal (excludes TBA-priced items)' : 'Estimated subtotal'}</span>
+      <span class="panel-summary-total">${fmtPrice(subtotal)}</span>
+    </div>`;
+}
+
+function daysAgo(dateStr){ const d=new Date(dateStr); const now=new Date("2026-08-23"); return Math.round((now-d)/86400000); }
+function fmtDate(dateStr){ const d=new Date(dateStr); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function fmtPrice(p){ return (p===null||p===undefined) ? "TBA" : "$"+p.toLocaleString(); }
+function amazonSearchUrl(p){
+  const q = p.name.toLowerCase().includes(p.brand.toLowerCase()) ? p.name : `${p.brand} ${p.name}`;
+  return "https://www.amazon.com/s?k=" + encodeURIComponent(q);
+}
+function isUnreleased(p){
+  return getGeneration(p).tier === "upcoming" || p.status === "unconfirmed";
+}
+function panelAmazonLink(p){
+  return isUnreleased(p) ? '' : `<a class="panel-amazon-link" href="${amazonSearchUrl(p)}" target="_blank" rel="noopener">Buy on Amazon &#8599;</a>`;
+}
+function catLabel(cat){ return {phone:"Phone",tablet:"Tablet",laptop:"Laptop",gpu:"GPU",chip:"Chip",memory:"Memory",monitor:"Monitor",tv:"TV",console:"Console",other:"Other"}[cat] || cat; }
+
+function getGeneration(p){
+  const da = daysAgo(p.date);
+  if(da < 0) return { tier:"upcoming", label:"Upcoming" };
+  if(da <= 180) return { tier:"new", label:"New" };
+  if(da <= 730) return { tier:"current", label:"Current" };
+  return { tier:"legacy", label:"Legacy" };
+}
+
+function avgRating(p){
+  const r = p.ratings;
+  return (r.quality + r.durability + r.value + r.specs) / 4;
+}
+function verdictInfo(avg){
+  if(avg >= 8.5) return { label:"Highly Recommended", cls:"rec-high" };
+  if(avg >= 7) return { label:"Recommended", cls:"rec-good" };
+  if(avg >= 5.5) return { label:"Solid Choice", cls:"rec-mid" };
+  return { label:"Consider Alternatives", cls:"rec-low" };
+}
+function ratingBar(label, cls, val){
+  return `<div class="rating-row">
+    <div class="rating-label">${label}</div>
+    <div class="rating-track"><div class="rating-fill ${cls}" style="width:${val*10}%"></div></div>
+    <div class="rating-score">${val}/10</div>
+  </div>`;
+}
+
+function populateBrands(){
+  const brands = [...new Set(PRODUCTS.map(p => p.brand))].sort();
+  const sel = document.getElementById("brandSelect");
+  brands.forEach(b => {
+    const opt = document.createElement("option");
+    opt.value = b; opt.textContent = b;
+    sel.appendChild(opt);
+  });
+}
+
+function maxSpecGB(p, keyPattern){
+  let max = null;
+  Object.entries(p.specs).filter(([k]) => keyPattern.test(k)).forEach(([,v]) => {
+    [...String(v).matchAll(/(\d+(?:\.\d+)?)\s*(GB|TB)/gi)].forEach(m => {
+      const val = parseFloat(m[1]) * (m[2].toUpperCase()==="TB" ? 1024 : 1);
+      if(max === null || val > max) max = val;
+    });
+  });
+  return max;
+}
+function matchesDisplaySpec(p, type){
+  if(!type) return true;
+  const text = Object.entries(p.specs).filter(([k]) => /display|panel/i.test(k)).map(([,v]) => String(v)).join(" ").toLowerCase();
+  if(!text) return false;
+  if(type === "oled") return /oled|amoled/.test(text);
+  if(type === "lcd") return /\blcd\b|\bips\b/.test(text);
+  if(type === "mini-led") return /mini-led/.test(text);
+  if(type === "micro-led") return /micro-led/.test(text);
+  return true;
+}
+
+function render(){
+  const grid = document.getElementById("grid");
+  let items = PRODUCTS.filter(p => {
+    const matchesCat = state.cat === "all" || p.cat === state.cat;
+    const matchesBrand = state.brand === "all" || p.brand === state.brand;
+    const matchesGen = state.gen === "all" || getGeneration(p).tier === state.gen;
+    const matchesRec = !state.recommendedOnly || avgRating(p) >= 8.5;
+    const matchesConfirmed = !state.confirmedOnly || p.status === "confirmed";
+    const matchesPrice = state.maxPrice == null || (p.price != null && p.price <= state.maxPrice);
+    const matchesDisplayType = matchesDisplaySpec(p, state.displayType);
+    const matchesMinRam = !state.minRam || (maxSpecGB(p, /ram|storage/i) ?? -1) >= state.minRam;
+    const q = state.search.toLowerCase();
+    const matchesSearch = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)
+      || p.summary.toLowerCase().includes(q) || Object.values(p.specs).some(v => String(v).toLowerCase().includes(q));
+    return matchesCat && matchesBrand && matchesGen && matchesRec && matchesConfirmed && matchesPrice
+      && matchesDisplayType && matchesMinRam && matchesSearch;
+  });
+
+  if(state.sort === "category" && state.cat === "all"){
+    // General browse view: surface the best-rated items from every category first,
+    // round-robin across categories, so the top page isn't dominated by one category.
+    const buckets = {};
+    CATEGORY_ORDER.forEach(c => buckets[c] = []);
+    items.forEach(p => buckets[p.cat].push(p));
+    CATEGORY_ORDER.forEach(c => buckets[c].sort((a,b) => avgRating(b) - avgRating(a) || new Date(b.date) - new Date(a.date)));
+    const interleaved = [];
+    let added = true;
+    while(added){
+      added = false;
+      for(const c of CATEGORY_ORDER){
+        if(buckets[c].length){ interleaved.push(buckets[c].shift()); added = true; }
+      }
+    }
+    items = interleaved;
+  } else {
+    items.sort((a,b) => {
+      if(state.sort === "category"){
+        const ai = CATEGORY_ORDER.indexOf(a.cat), bi = CATEGORY_ORDER.indexOf(b.cat);
+        if(ai !== bi) return ai - bi;
+        return new Date(b.date) - new Date(a.date);
+      }
+      if(state.sort === "date-desc") return new Date(b.date) - new Date(a.date);
+      if(state.sort === "date-asc") return new Date(a.date) - new Date(b.date);
+      if(state.sort === "price-asc") return (a.price ?? 1e9) - (b.price ?? 1e9);
+      if(state.sort === "price-desc") return (b.price ?? -1) - (a.price ?? -1);
+      if(state.sort === "rating-desc") return avgRating(b) - avgRating(a);
+    });
+  }
+
+  const loadMoreWrap = document.getElementById("loadMoreWrap");
+
+  if(items.length === 0){ grid.innerHTML = '<div class="empty">No releases match that search.</div>'; loadMoreWrap.innerHTML = ""; return; }
+
+  const total = items.length;
+  const visibleItems = items.slice(0, state.visibleCount);
+
+  grid.innerHTML = visibleItems.map(p => {
+    const gen = getGeneration(p);
+    const specHtml = Object.entries(p.specs).slice(0,3).map(([k,v]) => `<li><span class="spec-key">${k}</span><span class="spec-val">${v}</span></li>`).join("");
+    const selected = state.selected.has(p.id);
+    const wished = state.wishlist.has(p.id);
+    const inCart = state.cart.has(p.id);
+    const avg = avgRating(p);
+    const v = verdictInfo(avg);
+    const isTop = avg >= 8.5;
+    const metaBits = [p.brand, p.status==='unconfirmed' ? '<span class="unconfirmed">Unconfirmed specs</span>' : fmtDate(p.date), `<span class="card-price">${fmtPrice(p.price)}</span>`];
+    return `
+    <article class="card ${selected?'selected':''}" data-cat="${p.cat}" data-id="${p.id}">
+      <div class="card-cover cover-${p.cat}">
+        <div class="card-cover-top">
+          <div class="card-badges">
+            <span class="cat-badge ${p.cat}">${catLabel(p.cat)}</span>
+            <span class="gen-badge ${gen.tier}">${gen.label}</span>
+            ${isTop ? '<span class="pick-badge">&#9733; Top Pick</span>' : ''}
+          </div>
+          <button class="wishlist-btn ${wished?'on':''}" data-id="${p.id}" title="${wished?'Remove from wishlist':'Add to wishlist'}" type="button">${HEART_ICON}</button>
+        </div>
+        <div class="card-cover-icon">${COVERS[p.cat]}</div>
+      </div>
+      <div class="card-body">
+        <h3 class="card-name">${p.name}</h3>
+        <p class="card-meta">${metaBits.join(' &middot; ')}</p>
+        <p class="card-summary">${p.summary}</p>
+        <ul class="card-specs">${specHtml}</ul>
+        <div class="card-rating">
+          <span class="rating-pill ${v.cls}">${avg.toFixed(1)}/10 &middot; ${v.label}</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn-secondary view-btn" data-id="${p.id}">View full specs</button>
+          <div class="card-actions-row">
+            <button class="compare-btn ${selected?'on':''}" data-id="${p.id}">${selected?'✓ Added':'+ Compare'}</button>
+            <button class="cart-btn ${inCart?'on':''}" data-id="${p.id}">${inCart?'✓ In cart':'+ Cart'}</button>
+          </div>
+        </div>
+      </div>
+    </article>`;
+  }).join("");
+
+  document.querySelectorAll(".compare-btn").forEach(btn => {
+    btn.addEventListener("click", () => toggleSelect(btn.dataset.id));
+  });
+  document.querySelectorAll(".view-btn").forEach(btn => {
+    btn.addEventListener("click", () => openDetail(btn.dataset.id));
+  });
+  document.querySelectorAll(".wishlist-btn").forEach(btn => {
+    btn.addEventListener("click", e => { e.stopPropagation(); toggleWishlist(btn.dataset.id); });
+  });
+  document.querySelectorAll(".card-actions-row .cart-btn").forEach(btn => {
+    btn.addEventListener("click", () => toggleCart(btn.dataset.id));
+  });
+
+  const remaining = total - visibleItems.length;
+  if(remaining > 0){
+    loadMoreWrap.innerHTML = `
+      <div>
+        <button class="btn-loadmore" id="loadMoreBtn">Load ${Math.min(PAGE_SIZE, remaining)} more</button>
+        <span class="load-more-count">Showing ${visibleItems.length} of ${total}</span>
+      </div>`;
+    document.getElementById("loadMoreBtn").addEventListener("click", () => {
+      state.visibleCount += PAGE_SIZE;
+      render();
+    });
+  } else {
+    loadMoreWrap.innerHTML = "";
+  }
+}
+
+function toggleSelect(id){
+  if(state.selected.has(id)) state.selected.delete(id);
+  else { if(state.selected.size >= 4){ alert("You can compare up to 4 items at once."); return; } state.selected.add(id); }
+  render(); updateTray();
+}
+function updateTray(){
+  const tray = document.getElementById("tray");
+  const count = state.selected.size;
+  document.getElementById("trayCount").textContent = count;
+  tray.classList.toggle("show", count >= 1);
+}
+function bestPick(items, getValue, note){
+  const vals = items.map(getValue);
+  if(vals.some(v => v === null || v === undefined || isNaN(v))) return "—";
+  const best = Math.max(...vals);
+  const winners = items.filter((p,i) => vals[i] === best);
+  if(winners.length === items.length) return "Tied";
+  return winners.map(p => p.name).join(" & ") + ` (${note})`;
+}
+
+function extractNum(str, regex){
+  const m = String(str).match(regex);
+  return m ? parseFloat(m[1].replace(/,/g,"")) : null;
+}
+
+function chipRank(str){
+  const s = String(str);
+  let m = s.match(/\bM(\d+)[XZ]?\s*(Pro|Max|Ultra)?\b/i);
+  if(m){
+    const tierRank = { "":0, "pro":1, "max":2, "ultra":3 };
+    return { family:"apple-m", gen:parseInt(m[1],10), tier: tierRank[(m[2]||"").toLowerCase()] ?? 0 };
+  }
+  m = s.match(/\bA(\d{2})[XZ]?\s*(Pro)?\b/i);
+  if(m) return { family:"apple-a", gen:parseInt(m[1],10), tier: m[2] ? 1 : 0 };
+  m = s.match(/Snapdragon\s*8s\s*Gen\s*(\d+)/i);
+  if(m) return { family:"snapdragon-8s", gen:parseInt(m[1],10), tier:0 };
+  m = s.match(/Snapdragon\s*8\s*Elite\s*Gen\s*(\d+)/i);
+  if(m) return { family:"snapdragon-8", gen:100+parseInt(m[1],10), tier:0 };
+  if(/Snapdragon\s*8\s*Elite\b/i.test(s)) return { family:"snapdragon-8", gen:100, tier:0 };
+  m = s.match(/Snapdragon\s*8\s*Gen\s*(\d+)/i);
+  if(m) return { family:"snapdragon-8", gen:parseInt(m[1],10), tier:0 };
+  m = s.match(/Tensor\s*G(\d+)/i);
+  if(m) return { family:"tensor", gen:parseInt(m[1],10), tier:0 };
+  m = s.match(/Kirin\s*(\d+)/i);
+  if(m) return { family:"kirin", gen:parseInt(m[1],10), tier:0 };
+  m = s.match(/Exynos\s*(\d+)/i);
+  if(m) return { family:"exynos", gen:parseInt(m[1],10), tier:0 };
+  m = s.match(/Dimensity\s*(\d+)\+?/i);
+  if(m) return { family:"dimensity", gen:parseInt(m[1],10), tier:0 };
+  return null;
+}
+
+function specWinner(items, key){
+  const normKey = key.toLowerCase();
+  const withKey = items.filter(p => p.specs[key] !== undefined);
+  if(withKey.length < 2) return "—";
+
+  if(normKey === "os"){
+    const families = withKey.map(p => { const m = String(p.specs[key]).match(/^(iOS|iPadOS|Android|HarmonyOS|watchOS|Windows)/i); return m ? m[1].toLowerCase() : null; });
+    if(families.some(f => !f) || !families.every(f => f === families[0])) return "—";
+    const versions = withKey.map(p => extractNum(p.specs[key], /(\d+(?:\.\d+)?)/));
+    if(versions.some(v => v === null)) return "—";
+    const best = Math.max(...versions);
+    const winners = withKey.filter((p,i) => versions[i] === best);
+    if(winners.length === withKey.length) return "Tied";
+    return winners.map(p => p.name).join(" & ") + " (newer OS version)";
+  }
+
+  if(normKey === "chip"){
+    const ranks = withKey.map(p => chipRank(p.specs[key]));
+    if(ranks.some(r => r === null) || !ranks.every(r => r.family === ranks[0].family)) return "—";
+    const score = r => r.gen * 10 + r.tier;
+    const best = Math.max(...ranks.map(score));
+    const winners = withKey.filter((p,i) => score(ranks[i]) === best);
+    if(winners.length === withKey.length) return "Tied";
+    return winners.map(p => p.name).join(" & ") + " (newer generation chip)";
+  }
+
+  let extractor = null, note = null, lowerIsBetter = false;
+  if(normKey.includes("water resistance")){ extractor = v => { const m = String(v).match(/IP\s?(\d)(\d)/i); return m ? parseInt(m[1]+m[2],10) : null; }; note = "better water resistance"; }
+  else if(normKey.includes("charging")){ extractor = v => extractNum(v, /(\d+(?:\.\d+)?)\s*W\b/i); note = "faster charging"; }
+  else if(normKey.includes("battery")){ extractor = v => extractNum(v, /([\d,]+)\s*mAh/i); note = "bigger battery"; }
+  else if(normKey.includes("camera")){ extractor = v => { const ms=[...String(v).matchAll(/(\d+(?:\.\d+)?)\s*MP/gi)]; if(!ms.length) return null; return Math.max(...ms.map(m=>parseFloat(m[1]))); }; note = "higher resolution camera"; }
+  else if(normKey.includes("display") || normKey === "refresh rate"){ extractor = v => extractNum(v, /(\d+)\s*Hz/i); note = "higher refresh rate"; }
+  else if(normKey.includes("ram") || normKey.includes("storage")){ extractor = v => { const ms=[...String(v).matchAll(/(\d+(?:\.\d+)?)\s*(GB|TB)/gi)]; if(!ms.length) return null; return Math.max(...ms.map(m=>parseFloat(m[1])*(m[2].toUpperCase()==="TB"?1024:1))); }; note = "more storage"; }
+  else if(normKey.includes("weight")){ extractor = v => extractNum(v, /([\d.]+)\s*g\b/i); note = "lighter"; lowerIsBetter = true; }
+  else if(normKey.includes("thickness")){ extractor = v => extractNum(v, /([\d.]+)\s*mm/i); note = "thinner"; lowerIsBetter = true; }
+  else if(normKey === "vram"){ extractor = v => extractNum(v, /(\d+(?:\.\d+)?)\s*GB/i); note = "more VRAM"; }
+  else if(normKey === "cuda cores" || normKey === "gpu cores"){ extractor = v => extractNum(v, /([\d,]+)/); note = "more cores"; }
+  else if(normKey === "tdp" || normKey === "power envelope"){ extractor = v => extractNum(v, /(\d+(?:\.\d+)?)\s*W\b/i); note = "lower power draw"; lowerIsBetter = true; }
+  else return "—";
+
+  const withVals = withKey.map(p => ({ p, v: extractor(p.specs[key]) })).filter(x => x.v !== null && !isNaN(x.v));
+  if(withVals.length < 2) return "—";
+  const best = lowerIsBetter ? Math.min(...withVals.map(x => x.v)) : Math.max(...withVals.map(x => x.v));
+  const winners = withVals.filter(x => x.v === best);
+  if(winners.length === withVals.length) return "Tied";
+  return winners.map(x => x.p.name).join(" & ") + ` (${note})`;
+}
+
+function openCompare(){
+  const items = PRODUCTS.filter(p => state.selected.has(p.id));
+  if(items.length < 2){ alert("Pick at least 2 items to compare."); return; }
+  document.getElementById("shareLinkRow").style.display = "none";
+  const allKeys = [...new Set(items.flatMap(p => Object.keys(p.specs)))];
+  let html = "<thead><tr><th>Spec</th>";
+  items.forEach(p => html += `<th>${p.name}</th>`);
+  html += `<th>Which is better?</th>`;
+  html += "</tr></thead><tbody>";
+  html += `<tr><td class="spec-label">Brand</td>${items.map(p=>`<td>${p.brand}</td>`).join("")}<td>—</td></tr>`;
+  html += `<tr><td class="spec-label">Date</td>${items.map(p=>`<td>${fmtDate(p.date)}</td>`).join("")}<td>—</td></tr>`;
+  html += `<tr><td class="spec-label">Price</td>${items.map(p=>`<td>${fmtPrice(p.price)}</td>`).join("")}<td class="compare-winner">${bestPick(items, p => p.price==null ? NaN : -p.price, "cheaper")}</td></tr>`;
+  html += `<tr><td class="spec-label">Overall rating</td>${items.map(p=>`<td>${avgRating(p).toFixed(1)}/10 — ${verdictInfo(avgRating(p)).label}</td>`).join("")}<td class="compare-winner">${bestPick(items, p => avgRating(p), "higher rated overall")}</td></tr>`;
+  html += `<tr><td class="spec-label">Quality</td>${items.map(p=>`<td>${p.ratings.quality}/10</td>`).join("")}<td class="compare-winner">${bestPick(items, p => p.ratings.quality, "better quality")}</td></tr>`;
+  html += `<tr><td class="spec-label">Durability</td>${items.map(p=>`<td>${p.ratings.durability}/10</td>`).join("")}<td class="compare-winner">${bestPick(items, p => p.ratings.durability, "more durable")}</td></tr>`;
+  html += `<tr><td class="spec-label">Value for money</td>${items.map(p=>`<td>${p.ratings.value}/10</td>`).join("")}<td class="compare-winner">${bestPick(items, p => p.ratings.value, "better value")}</td></tr>`;
+  html += `<tr><td class="spec-label">Specs</td>${items.map(p=>`<td>${p.ratings.specs}/10</td>`).join("")}<td class="compare-winner">${bestPick(items, p => p.ratings.specs, "stronger specs")}</td></tr>`;
+  allKeys.forEach(key => {
+    html += `<tr><td class="spec-label">${key}</td>`;
+    items.forEach(p => html += `<td>${p.specs[key] || "—"}</td>`);
+    const winner = specWinner(items, key);
+    html += `<td class="${winner!=='—' && winner!=='Tied' ? 'compare-winner' : ''}">${winner}</td></tr>`;
+  });
+  html += "</tbody>";
+  document.getElementById("compareTable").innerHTML = html;
+  document.getElementById("overlay").classList.add("show");
+}
+
+function trackRecent(id){
+  state.recent = [id, ...state.recent.filter(x => x !== id)].slice(0, 12);
+  saveRecent();
+  renderRecentStrip();
+}
+function renderRecentStrip(){
+  const section = document.getElementById("recentSection");
+  const items = state.recent.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+  if(items.length === 0){ section.style.display = "none"; return; }
+  section.style.display = "";
+  document.getElementById("recentRow").innerHTML = items.map(p => `
+    <button type="button" class="recent-chip" data-id="${p.id}">
+      <span class="recent-chip-icon cover-${p.cat}">${COVERS[p.cat]}</span>
+      <span class="recent-chip-main">
+        <span class="recent-chip-name">${p.name}</span>
+        <span class="recent-chip-price">${fmtPrice(p.price)}</span>
+      </span>
+    </button>`).join("");
+  document.querySelectorAll(".recent-chip").forEach(btn => {
+    btn.addEventListener("click", () => openDetail(btn.dataset.id));
+  });
+}
+
+function openDetail(id){
+  const p = PRODUCTS.find(x => x.id === id);
+  const gen = getGeneration(p);
+  const avg = avgRating(p);
+  const v = verdictInfo(avg);
+  const selected = state.selected.has(p.id);
+  const unreleased = gen.tier === "upcoming" || p.status === "unconfirmed";
+  trackRecent(id);
+
+  document.getElementById("detailTitle").textContent = p.name;
+  document.getElementById("detailCover").className = `detail-cover cover-${p.cat}`;
+  document.getElementById("detailCover").innerHTML = COVERS[p.cat];
+
+  const specsHtml = Object.entries(p.specs).map(([k,val]) => `
+    <div class="detail-spec"><span class="detail-spec-key">${k}</span><span class="detail-spec-val">${val}</span></div>
+  `).join("");
+
+  document.getElementById("detailBody").innerHTML = `
+    <div class="detail-meta">
+      <span class="cat-badge ${p.cat}">${catLabel(p.cat)}</span>
+      <span class="gen-badge ${gen.tier}">${gen.label}</span>
+      <span class="status-badge ${p.status==='unconfirmed'?'unconfirmed':''}">${p.status==='unconfirmed'?'Unconfirmed specs':fmtDate(p.date)}</span>
+      <span class="detail-price" style="margin-left:auto;">${fmtPrice(p.price)}</span>
+    </div>
+    <p class="detail-summary">${p.summary}</p>
+    <div class="verdict ${v.cls}">${v.label} &middot; ${avg.toFixed(1)}/10 overall</div>
+    <div class="ratings-block">
+      ${ratingBar("Quality","quality",p.ratings.quality)}
+      ${ratingBar("Durability","durability",p.ratings.durability)}
+      ${ratingBar("Value","value",p.ratings.value)}
+      ${ratingBar("Specs","specs",p.ratings.specs)}
+    </div>
+    <p class="detail-subhead">Full specifications</p>
+    <div class="detail-specs">${specsHtml}</div>
+    <div class="detail-actions">
+      ${unreleased ? '<span class="unreleased-note">Not yet released — no purchase link available</span>' : `<a class="btn-primary" href="${amazonSearchUrl(p)}" target="_blank" rel="noopener">Buy on Amazon &#8599;</a>`}
+      <button class="cart-btn ${state.cart.has(p.id)?'on':''}" id="detailCartBtn">${state.cart.has(p.id)?'✓ In cart':'+ Cart'}</button>
+      <button class="btn-ghost" id="detailWishlistBtn">${state.wishlist.has(p.id)?'♥ Wishlisted':'♡ Wishlist'}</button>
+      <button class="btn-ghost" id="detailCompareBtn">${selected?'✓ Added to compare':'+ Add to compare'}</button>
+    </div>
+  `;
+
+  document.getElementById("detailCompareBtn").addEventListener("click", () => {
+    toggleSelect(p.id);
+    document.getElementById("detailCompareBtn").textContent = state.selected.has(p.id) ? "✓ Added to compare" : "+ Add to compare";
+  });
+  document.getElementById("detailCartBtn").addEventListener("click", () => {
+    toggleCart(p.id);
+    document.getElementById("detailCartBtn").classList.toggle("on", state.cart.has(p.id));
+    document.getElementById("detailCartBtn").textContent = state.cart.has(p.id) ? "✓ In cart" : "+ Cart";
+  });
+  document.getElementById("detailWishlistBtn").addEventListener("click", () => {
+    toggleWishlist(p.id);
+    document.getElementById("detailWishlistBtn").textContent = state.wishlist.has(p.id) ? "♥ Wishlisted" : "♡ Wishlist";
+  });
+
+  document.getElementById("detailOverlay").classList.add("show");
+}
+
+function renderSearchSuggestions(){
+  const box = document.getElementById("searchSuggest");
+  const q = state.search.trim().toLowerCase();
+  if(q.length < 1){ box.classList.remove("show"); box.innerHTML = ""; return; }
+  const matches = PRODUCTS.filter(p => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)).slice(0, 6);
+  if(matches.length === 0){ box.classList.remove("show"); box.innerHTML = ""; return; }
+  box.innerHTML = matches.map(p => `
+    <button type="button" class="suggest-item" data-id="${p.id}">
+      <span class="suggest-icon cover-${p.cat}">${COVERS[p.cat]}</span>
+      <span class="suggest-main">
+        <span class="suggest-name">${p.name}</span>
+        <span class="suggest-meta">${p.brand} &middot; ${catLabel(p.cat)}</span>
+      </span>
+      <span class="suggest-price">${fmtPrice(p.price)}</span>
+    </button>`).join("");
+  box.classList.add("show");
+  box.querySelectorAll(".suggest-item").forEach(btn => {
+    btn.addEventListener("click", () => {
+      box.classList.remove("show");
+      openDetail(btn.dataset.id);
+    });
+  });
+}
+document.getElementById("searchInput").addEventListener("input", e => { state.search=e.target.value; resetPaging(); render(); renderSearchSuggestions(); });
+document.getElementById("searchInput").addEventListener("focus", () => renderSearchSuggestions());
+document.addEventListener("click", e => {
+  const field = document.querySelector(".search-field");
+  if(field && !field.contains(e.target)) document.getElementById("searchSuggest").classList.remove("show");
+});
+document.getElementById("searchInput").addEventListener("keydown", e => { if(e.key==="Escape") document.getElementById("searchSuggest").classList.remove("show"); });
+document.getElementById("categorySelect").addEventListener("change", e => { state.cat=e.target.value; resetPaging(); render(); });
+document.getElementById("brandSelect").addEventListener("change", e => { state.brand=e.target.value; resetPaging(); render(); });
+document.getElementById("genSelect").addEventListener("change", e => { state.gen=e.target.value; resetPaging(); render(); });
+document.getElementById("sortSelect").addEventListener("change", e => { state.sort=e.target.value; resetPaging(); render(); });
+document.getElementById("recToggle").addEventListener("change", e => { state.recommendedOnly=e.target.checked; resetPaging(); render(); });
+document.getElementById("confirmedToggle").addEventListener("change", e => { state.confirmedOnly=e.target.checked; resetPaging(); render(); });
+document.getElementById("maxPriceSelect").addEventListener("change", e => { state.maxPrice=e.target.value?Number(e.target.value):null; resetPaging(); render(); });
+document.getElementById("displayTypeSelect").addEventListener("change", e => { state.displayType=e.target.value; resetPaging(); render(); });
+document.getElementById("minRamSelect").addEventListener("change", e => { state.minRam=e.target.value?Number(e.target.value):null; resetPaging(); render(); });
+
+document.getElementById("clearBtn").addEventListener("click", () => { state.selected.clear(); render(); updateTray(); });
+document.getElementById("compareBtn").addEventListener("click", openCompare);
+document.getElementById("closeModal").addEventListener("click", () => document.getElementById("overlay").classList.remove("show"));
+function tryClipboardCopy(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text).then(() => true).catch(() => false);
+  }
+  return Promise.resolve(false);
+}
+document.getElementById("shareCompareBtn").addEventListener("click", () => {
+  const url = location.origin + location.pathname + "?compare=" + [...state.selected].join(",");
+  const input = document.getElementById("shareLinkInput");
+  input.value = url;
+  document.getElementById("shareLinkRow").style.display = "flex";
+  input.focus();
+  input.select();
+  tryClipboardCopy(url).then(ok => {
+    if(ok){
+      const btn = document.getElementById("shareCompareBtn");
+      const original = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = original; }, 1800);
+    }
+  });
+});
+document.getElementById("shareLinkCopyBtn").addEventListener("click", () => {
+  const input = document.getElementById("shareLinkInput");
+  input.focus();
+  input.select();
+  tryClipboardCopy(input.value).then(ok => {
+    const btn = document.getElementById("shareLinkCopyBtn");
+    btn.textContent = ok ? "Copied!" : "Select & copy";
+    setTimeout(() => { btn.textContent = "Copy"; }, 1800);
+  });
+});
+document.getElementById("overlay").addEventListener("click", e => { if(e.target.id==="overlay") e.target.classList.remove("show"); });
+document.getElementById("closeDetail").addEventListener("click", () => document.getElementById("detailOverlay").classList.remove("show"));
+document.getElementById("detailOverlay").addEventListener("click", e => { if(e.target.id==="detailOverlay") e.target.classList.remove("show"); });
+
+document.getElementById("accountBtn").addEventListener("click", () => { renderAccountPanel(); document.getElementById("accountOverlay").classList.add("show"); });
+document.getElementById("closeAccount").addEventListener("click", () => document.getElementById("accountOverlay").classList.remove("show"));
+document.getElementById("accountOverlay").addEventListener("click", e => { if(e.target.id==="accountOverlay") e.target.classList.remove("show"); });
+
+function openTerms(){ document.getElementById("termsOverlay").classList.add("show"); }
+function openPrivacy(){ document.getElementById("privacyOverlay").classList.add("show"); }
+document.getElementById("footerTermsLink").addEventListener("click", openTerms);
+document.getElementById("footerPrivacyLink").addEventListener("click", openPrivacy);
+document.getElementById("welcomeTermsLink").addEventListener("click", openTerms);
+document.getElementById("welcomePrivacyLink").addEventListener("click", openPrivacy);
+document.getElementById("closeTerms").addEventListener("click", () => document.getElementById("termsOverlay").classList.remove("show"));
+document.getElementById("termsOverlay").addEventListener("click", e => { if(e.target.id==="termsOverlay") e.target.classList.remove("show"); });
+document.getElementById("closePrivacy").addEventListener("click", () => document.getElementById("privacyOverlay").classList.remove("show"));
+document.getElementById("privacyOverlay").addEventListener("click", e => { if(e.target.id==="privacyOverlay") e.target.classList.remove("show"); });
+
+function dismissWelcomeGate(){
+  localStorage.setItem(COOKIE_CONSENT_KEY, "1");
+  document.getElementById("welcomeGate").classList.remove("show");
+}
+if(!localStorage.getItem(COOKIE_CONSENT_KEY)){
+  document.getElementById("welcomeGate").classList.add("show");
+}
+document.getElementById("welcomeConsentCheck").addEventListener("change", e => {
+  document.getElementById("welcomeLoginBtn").disabled = !e.target.checked;
+  document.getElementById("welcomeGuestBtn").disabled = !e.target.checked;
+});
+document.getElementById("welcomeGuestBtn").addEventListener("click", dismissWelcomeGate);
+document.getElementById("welcomeLoginBtn").addEventListener("click", () => {
+  dismissWelcomeGate();
+  renderAccountPanel();
+  document.getElementById("accountOverlay").classList.add("show");
+});
+
+document.getElementById("wishlistBtn").addEventListener("click", () => { renderWishlistPanel(); document.getElementById("wishlistOverlay").classList.add("show"); });
+document.getElementById("closeWishlist").addEventListener("click", () => document.getElementById("wishlistOverlay").classList.remove("show"));
+document.getElementById("wishlistOverlay").addEventListener("click", e => { if(e.target.id==="wishlistOverlay") e.target.classList.remove("show"); });
+document.getElementById("clearWishlistBtn").addEventListener("click", () => {
+  if(state.wishlist.size === 0) return;
+  if(!confirm("Remove all items from your wishlist?")) return;
+  state.wishlist.clear();
+  syncWishlistClear();
+  saveWishlist();
+  render(); updateHeaderCounts(); renderWishlistPanel();
+});
+
+document.getElementById("cartBtn").addEventListener("click", () => { renderCartPanel(); document.getElementById("cartOverlay").classList.add("show"); });
+document.getElementById("closeCart").addEventListener("click", () => document.getElementById("cartOverlay").classList.remove("show"));
+document.getElementById("cartOverlay").addEventListener("click", e => { if(e.target.id==="cartOverlay") e.target.classList.remove("show"); });
+document.getElementById("clearCartBtn").addEventListener("click", () => {
+  if(state.cart.size === 0) return;
+  if(!confirm("Remove all items from your cart?")) return;
+  state.cart.clear();
+  syncCartClear();
+  saveCart();
+  render(); updateHeaderCounts(); renderCartPanel();
+});
+
+document.getElementById("heroTiles").innerHTML = Object.keys(COVERS).map(cat => `
+  <button type="button" class="tile-item" data-cat="${cat}" title="${catLabel(cat)}">
+    <span class="tile cover-${cat}">${COVERS[cat]}</span>
+    <span class="tile-label">${catLabel(cat)}</span>
+  </button>`).join("");
+document.querySelectorAll(".tile-item").forEach(tile => {
+  tile.addEventListener("click", () => {
+    const cat = tile.dataset.cat;
+    state.cat = cat;
+    document.getElementById("categorySelect").value = cat;
+    resetPaging();
+    render();
+    document.getElementById("catalog").scrollIntoView({ behavior:"smooth", block:"start" });
+  });
+});
+
+document.getElementById("themeToggle").addEventListener("click", () => {
+  state.theme = state.theme === "light" ? "dark" : "light";
+  localStorage.setItem(THEME_KEY, state.theme);
+  applyTheme(state.theme);
+});
+applyTheme(state.theme);
+
+populateBrands();
+document.getElementById("datestamp").textContent = "Ledger as of " + fmtDate("2026-08-23");
+document.getElementById("statTotal").textContent = PRODUCTS.length;
+document.getElementById("statBrands").textContent = new Set(PRODUCTS.map(p => p.brand)).size;
+document.getElementById("statRecommended").textContent = PRODUCTS.filter(p => avgRating(p) >= 8.5).length;
+updateHeaderCounts();
+renderRecentStrip();
+
+render();
+
+(function applySharedCompare(){
+  const params = new URLSearchParams(location.search);
+  const ids = (params.get("compare") || "").split(",").map(s => s.trim()).filter(Boolean);
+  const valid = ids.filter(id => PRODUCTS.some(p => p.id === id)).slice(0, 4);
+  if(valid.length >= 2){
+    valid.forEach(id => state.selected.add(id));
+    render();
+    updateTray();
+    openCompare();
+  }
+})();
+</script>
+</body>
+</html>
